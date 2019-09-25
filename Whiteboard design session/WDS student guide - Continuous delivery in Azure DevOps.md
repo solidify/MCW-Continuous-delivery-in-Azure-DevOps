@@ -1,4 +1,4 @@
-![](https://github.com/Microsoft/MCW-Template-Cloud-Workshop/raw/master/Media/ms-cloud-workshop.png "Microsoft Cloud Workshops")
+![Microsoft Cloud Workshops](https://github.com/Microsoft/MCW-Template-Cloud-Workshop/raw/master/Media/ms-cloud-workshop.png "Microsoft Cloud Workshops")
 
 <div class="MCWHeader1">
 Continuous delivery in Azure DevOps
@@ -9,7 +9,7 @@ Whiteboard design session student guide
 </div>
 
 <div class="MCWHeader3">
-January 2019
+August 2019
 </div>
 
 Information in this document, including URL and other Internet Web site references, is subject to change without notice. Unless otherwise noted, the example companies, organizations, products, domain names, e-mail addresses, logos, people, places, and events depicted herein are fictitious, and no association with any real company, organization, product, domain name, e-mail address, logo, person, place or event is intended or should be inferred. Complying with all applicable copyright laws is the responsibility of the user. Without limiting the rights under copyright, no part of this document may be reproduced, stored in or introduced into a retrieval system, or transmitted in any form or by any means (electronic, mechanical, photocopying, recording, or otherwise), or for any purpose, without the express written permission of Microsoft Corporation.
@@ -72,13 +72,13 @@ Tailspin Toys is based in the United States and is headquartered in Portland, OR
 
 Tailspin Toys saw the positive potential of the cloud and moved its IT infrastructure, with no significant re-architecture, into Microsoft Azure around six months ago. Now that its business is running successfully in the cloud, it has started a series of process improvements to become a more agile company with a specific focus on delivering frequent feature updates and fixes to its public website. Alex Montgomery, VP of sales and the head of its online business team, says that, "Even though our products are better, our competitors are generating more online sales than we are. For every feature that we deliver to our website, they have delivered 2 or 3. Our development processes are too cumbersome and slow for us to build quality code at that pace."
 
-When it moved its existing systems into Microsoft Azure, Tailspin Toys decided to use the Azure App Service to host its public website which is written as an ASP.NET Model View Controller MVC application. For the database (back-end) tier, they chose the Azure SQL Database service for full Platform-as-a-Service agility.
+When it moved its existing systems into Microsoft Azure, Tailspin Toys decided to use the Azure App Service to host its public website which is written as an Angular front-end with an ASP.NET Core API. For the database (back-end) tier, they chose the Azure PostgreSQL Database service for full Platform-as-a-Service agility.
 
 **Public website and data layer**
 
 Todd Culp is the enterprise architect at Tailspin Toys, and he is responsible for the application and development team's environments in Azure. He has also been tasked with changing the development processes for his team so they can be more agile and adaptive in the marketplace.
 
-The public website is currently deployed as an ASP.NET MVC 4 Web App in an App Service Plan in the S3 tier. The development team is hosting its source control for the system in Visual Studio Team Services using a Git repository with branches set up for multiple environments including "development," "test," and "master." As they get close to a release point, the developers have a manual internal code review and QA process in which they debug the application on each other's machines and run through some use cases to test new and existing features in the application. When the build is ready, they manually deploy updates to the website through Visual Studio or FTP. Todd has been tasked with automating the entire process of testing, building, and deploying to the cloud for both the QA team, so they can fully test new builds in a realistic cloud environment, and for the developers, so they cannot deploy any builds that fail the test suite. The builds for the different environments should not affect each other, and there must be an easy way to promote a tested build to production.
+The public website is currently deployed as an Angular front-end Web App with an ASP.NET Core API in an App Service Plan in the S3 tier. The development team is hosting its source control for the system in Visual Studio Team Services using a Git repository with branches set up for multiple environments including "development," "test," and "master." As they get close to a release point, the developers have a manual internal code review and QA process in which they debug the application on each other's machines and run through some use cases to test new and existing features in the application. When the build is ready, they manually deploy updates to the website through Visual Studio or FTP. Todd has been tasked with automating the entire process of testing, building, and deploying to the cloud for both the QA team, so they can fully test new builds in a realistic cloud environment, and for the developers, so they cannot deploy any builds that fail the test suite. The builds for the different environments should not affect each other, and there must be an easy way to promote a tested build to production.
 
 Todd requires the development team to run unit and integration tests for every build, but there is no formal procedure or accountability over this process within the team. Also, he always makes the team sign off on the build before it goes live, but there have been some bugs that appeared in production that should have been caught by a software-based test before deployment. He thinks the developers are not consistently running all required tests and needs an automated way to enforce this before builds are deployed into the cloud.
 
@@ -88,7 +88,7 @@ Todd wants to improve the turnaround time for fixing these bugs, and he needs be
 
 **Existing solution architecture**
 
-![This is a diagram of Tailspin Toys existing solution architecture. On the left is a Visual Studio icon and the words "development," "test," and "master," which represents the development team hosting its source control in Azure DevOps with branches set up for development, test, and master environments. Three arrows point from these environments to a server and monitor icon on the right labeled Manual internal code review & QA on local developer machines. An arrow points from this icon to another Visual Studio icon on the right labeled Visual Studio/FTP, which represents developers manually deploying updates through Visual Studio or FTP. Two arrows point from this icon to two icons on the right: on the top, Azure App Service with Web App (S3 Instance), and on the bottom, Azure SQL Database (S1 Instance).](images/studentguide/media/image2.png "Existing solution architecture diagram")
+![This is a diagram of Tailspin Toys existing solution architecture. On the left is a Visual Studio icon and the words "development," "test," and "master," which represents the development team hosting its source control in Azure DevOps with branches set up for development, test, and master environments. Three arrows point from these environments to a server and monitor icon on the right labeled Manual internal code review & QA on local developer machines. An arrow points from this icon to another Visual Studio icon on the right labeled Visual Studio/FTP, which represents developers manually deploying updates through Visual Studio or FTP. Two arrows point from this icon to two icons on the right: on the top, Azure App Service with Web App (S3 Instance), and on the bottom, Azure PostgreSQL Database (S1 Instance).](images/studentguide/media/image2.png "Existing solution architecture diagram")
 
 ### Customer needs 
 
