@@ -71,7 +71,7 @@ Tailspin Toys has asked you to automate their development process in two specifi
 
 ## Solution architecture
 
-![Image that shows the pipeline for checking in code to Azure DevOps that goes through automated build and testing with release management to production.](images/stepbystep/media/image2.png "Solution architecture")
+![Image that shows the pipeline for checking in code to Azure DevOps that goes through automated build and testing with release management to production.](images/stepbystep/media/pref-sol-1.jpg "Solution architecture")
 
 ## Requirements
 
