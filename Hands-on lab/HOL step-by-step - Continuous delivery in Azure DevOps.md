@@ -47,11 +47,12 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 2: Add test and production environments to release pipeline](#task-2-add-test-and-production-environments-to-release-pipeline)
   - [Exercise 5: Trigger a build and release](#exercise-5-trigger-a-build-and-release)
     - [Task 1: Manually queue a new build and follow it through the release pipeline](#task-1-manually-queue-a-new-build-and-follow-it-through-the-release-pipeline)
-  - [Exercise 6: Create a feature branch and submit a pull request](#exercise-6-create-a-feature-branch-and-submit-a-pull-request)
-    - [Task 1: Create a new branch](#task-1-create-a-new-branch)
-    - [Task 2: Make a code change to the feature branch](#task-2-make-a-code-change-to-the-feature-branch)
-    - [Task 3: Submit a pull request](#task-3-submit-a-pull-request)
-    - [Task 4: Approve and complete a pull request](#task-4-approve-and-complete-a-pull-request)
+  - [Exercise 6: Set up a Pull Request policy, create a feature/task branch and submit a pull request](#exercise-6-create-a-feature-branch-and-submit-a-pull-request)
+    - [Task 1: Create a Pull Request policy](#task_1_set_up_a_pull_request_policy)
+    - [Task 2: Create a new branch](#task-2-create-a-new-branch)
+    - [Task 3: Make a code change to the feature branch](#task-3-make-a-code-change-to-the-feature-branch)
+    - [Task 3: Submit a pull request](#task-4-submit-a-pull-request)
+    - [Task 4: Approve and complete a pull request](#task-5-approve-and-complete-a-pull-request)
   - [After the hands-on lab](#after-the-hands-on-lab)
     - [Task 1: Delete resources](#task-1-delete-resources)
 
@@ -177,7 +178,7 @@ Since this solution is based on Azure Platform-as-a-Service (PaaS) technology, i
 
 Now that the template file has been uploaded, we'll deploy it several times to create each of our desired environments: "dev", "test", and "production". Let's start with the "dev" environment.
 
-1.  In the **Azure Cloud Shell** terminal, enter the following command and press **Enter**:
+1.  In the **Azure Cloud Shell** terminal, using Bash mode, enter the following command and press **Enter**:
 
     ```bash
     echo "Enter the Resource Group name:" &&
@@ -188,7 +189,7 @@ Now that the template file has been uploaded, we'll deploy it several times to c
     az group deployment create --resource-group $resourceGroupName --template-file "$HOME/azuredeploy.json"
     ```
     
-    >**Note**: This command is designed to prompt us to enter the resource group name and Azure region (location) we want to deploy our resources to. The script then takes our inputs and passes them as parameters to the Azure CLI command that calls our recently uploaded template file.
+    >**Note**: This command is designed to prompt us to enter the resource group name and Azure region (location) we want to deploy our resources to. The script then takes our inputs and passes them as parameters to the Azure CLI command that calls our recently uploaded template file.  Also be aware that you need to run this from a Bash terminal. 
 
     ![In the Azure Cloud Shell window, the command has been entered is we are prompted for the name of the resource group we want to deploy to.](images/stepbystep/media/image44.png "Azure Cloud Shell window")
 
@@ -206,13 +207,15 @@ Now that the template file has been uploaded, we'll deploy it several times to c
 
 6.  For this first run, select the "dev" environment by entering **1** and then pressing **Enter**. 
 
-7.  Next, we're asked to supply an administrator login (username) for the PostgreSQL server and database. This will be the username credential you would need to enter to connect to your newly created database.
+7.  Next, we're asked to supply an administrator login (username) for the PostgreSQL server and database. This will be the username credential you would need to enter to connect to your newly created database.  
+
+    These credentials are not used further in the lab, so you can really enter anything that is valid here.  The administrator login can be "admin".
 
    ![In the Azure Cloud Shell window, we are prompted for the administrative username for the PostgreSQL server and database we want to create.](images/stepbystep/media/image47.png "Azure Cloud Shell")
 
 8.  Enter a value for the "administratorLogin" and then press **Enter**.
 
-9.  Next, we're asked to supply an administrator password for the PostgreSQL server and database. This will be the password credential you would need to enter to connect to your newly created database.
+9.  Next, we're asked to supply an administrator password for the PostgreSQL server and database. This will be the password credential you would need to enter to connect to your newly created database.  The password need to fulfill the requirements, more than 8 chars, and containing upper/lower case characters, numbers and a symbol, so e.g. "Whatever2019!" should work. 
 
    ![In the Azure Cloud Shell window, we are prompted for the administrative password for the PostgreSQL server and database we want to create.](images/stepbystep/media/image48.png "Azure Cloud Shell")
 
