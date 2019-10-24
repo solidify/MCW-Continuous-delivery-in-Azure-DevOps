@@ -47,7 +47,7 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 2: Add test and production environments to release pipeline](#task-2-add-test-and-production-environments-to-release-pipeline)
   - [Exercise 5: Trigger a build and release](#exercise-5-trigger-a-build-and-release)
     - [Task 1: Manually queue a new build and follow it through the release pipeline](#task-1-manually-queue-a-new-build-and-follow-it-through-the-release-pipeline)
-  - [Exercise 6: Set up a Pull Request policy, create a task branch and submit a pull request](#exercise-6-create-a-task-branch-and-submit-a-pull-request)
+  - [Exercise 6: Set up a Pull Request policy, create a task branch and submit a pull request](#exercise-6-set-up-a-pull-request-policy-create-a-task-branch-and-submit-a-pull-request)
     - [Task 1: Set up a Pull Request policy](#task-1-set-up-a-pull-request-policy)
     - [Task 2: Create a new branch](#task-2-create-a-new-branch)
     - [Task 3: Make a code change to the task branch](#task-3-make-a-code-change-to-the-task-branch)
