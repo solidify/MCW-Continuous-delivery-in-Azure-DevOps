@@ -50,7 +50,7 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
   - [Exercise 6: Set up a Pull Request policy, create a feature/task branch and submit a pull request](#exercise-6-create-a-feature-branch-and-submit-a-pull-request)
     - [Task 1: Set up a Pull Request policy](#task-1-set-up-a-pull-request-policy)
     - [Task 2: Create a new branch](#task-2-create-a-new-branch)
-    - [Task 3: Make a code change to the feature branch](#task-3-make-a-code-change-to-the-feature-branch)
+    - [Task 3: Make a code change to the task branch](#task-3-make-a-code-change-to-the-task-branch)
     - [Task 4: Submit a pull request](#task-4-submit-a-pull-request)
     - [Task 5: Approve and complete a pull request](#task-5-approve-and-complete-a-pull-request)
   - [After the hands-on lab](#after-the-hands-on-lab)
@@ -728,10 +728,10 @@ Any commit of new or modified code to the master branch will automatically trigg
 
 Duration: 30 Minutes
 
-In this exercise, you will first set up a Pull request policy for your master branch, then you will create a short-lived feature branch, aka task branch,  make a small code change, commit and push the code, and submit a pull request. 
+In this exercise, you will first set up a Pull request policy for your master branch, then you will create a short-lived task branch, make a small code change, commit and push the code, and submit a pull request. 
 You'll then merge the pull request into the master branch which triggers an automated build and release of the application.
 
-In the tasks below, you will make changes directly through the Azure DevOps web interface. These steps could also be performed through an IDE of your choosing or using the Azure Cloud Shell Code Editor.
+In the tasks below, you will make changes directly through the Azure DevOps web interface. These steps could also be performed locally through an IDE of your choosing or using the Azure Cloud Shell Code Editor.
 
 ### Task 1: Set up a Pull Request policy
 
@@ -769,7 +769,7 @@ The second check is to ensure that if anyone comments on this PR during the peer
 
 4.  Select "Create branch".
 
-### Task 3: Make a code change to the feature/task branch
+### Task 3: Make a code change to the task branch
 
 1.  Choose the name of the newly created branch. This will present the "Files" window showing all the files in the repository.
 
