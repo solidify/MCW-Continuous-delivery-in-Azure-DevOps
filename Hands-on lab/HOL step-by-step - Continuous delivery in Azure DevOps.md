@@ -463,6 +463,10 @@ Steps are a linear sequence of operations that make up a job. Each step runs in 
       displayName: 'Use NuGet 4.4.1'
       inputs:
         versionSpec: 4.4.1
+        
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '10.x'         
     ```
 
 Tasks are the building blocks of a pipeline. They describe the actions that are performed in sequence during an execution of the pipeline.
@@ -521,6 +525,10 @@ Tasks are the building blocks of a pipeline. They describe the actions that are 
       inputs:
         restoreSolution: 'tailspintoysweb.csproj'
 
+    - task: NodeTool@0
+    inputs:
+      versionSpec: '10.x' 
+    
     - task: VSBuild@1
       displayName: 'Build solution'
       inputs:
