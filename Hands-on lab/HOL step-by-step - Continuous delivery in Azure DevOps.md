@@ -174,6 +174,245 @@ Since this solution is based on Azure Platform-as-a-Service (PaaS) technology, i
 
     ![This is a screenshot of the code pasted just below the element for the application insights extension in the "resources" array.](images/stepbystep/media/image39.png "Pasted block of JSON code")
 
+
+    The complete ARM template should look like the following:
+
+    ```json
+    {
+        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+            "environment": {
+                "type": "string",
+                "metadata": {
+                    "description": "Name of environment"
+                },
+                "allowedValues": [
+                    "dev",
+                    "test",
+                    "production"
+                ]
+            },
+            "siteName": {
+                "type": "string",
+                "defaultValue": "tailspintoys",
+                "metadata": {
+                    "description": "Name of azure web app"
+                }
+            },
+            "administratorLogin": {
+                "type": "string",
+                "minLength": 1,
+                "metadata": {
+                    "description": "Database administrator login name"
+                }
+            },
+            "administratorLoginPassword": {
+                "type": "securestring",
+                "minLength": 8,
+                "maxLength": 128,
+                "metadata": {
+                    "description": "Database administrator password"
+                }
+            },
+            "databaseSkuCapacity": {
+                "type": "int",
+                "defaultValue": 2,
+                "allowedValues": [
+                    2,
+                    4,
+                    8,
+                    16,
+                    32
+                ],
+                "metadata": {
+                    "description": "Azure database for PostgreSQL compute capacity in vCores (2,4,8,16,32)"
+                }
+            },
+            "databaseSkuName": {
+                "type": "string",
+                "defaultValue": "GP_Gen5_2",
+                "allowedValues": [
+                    "GP_Gen5_2",
+                    "GP_Gen5_4",
+                    "GP_Gen5_8",
+                    "GP_Gen5_16",
+                    "GP_Gen5_32",
+                    "MO_Gen5_2",
+                    "MO_Gen5_4",
+                    "MO_Gen5_8",
+                    "MO_Gen5_16",
+                    "MO_Gen5_32"
+                ],
+                "metadata": {
+                    "description": "Azure database for PostgreSQL sku name "
+                }
+            },
+            "databaseSkuSizeMB": {
+                "type": "int",
+                "allowedValues": [
+                    102400,
+                    51200
+                ],
+                "defaultValue": 51200,
+                "metadata": {
+                    "description": "Azure database for PostgreSQL Sku Size "
+                }
+            },
+            "databaseSkuTier": {
+                "type": "string",
+                "defaultValue": "GeneralPurpose",
+                "allowedValues": [
+                    "GeneralPurpose",
+                    "MemoryOptimized"
+                ],
+                "metadata": {
+                    "description": "Azure database for PostgreSQL pricing tier"
+                }
+            },
+            "postgresqlVersion": {
+                "type": "string",
+                "allowedValues": [
+                    "9.5",
+                    "9.6"
+                ],
+                "defaultValue": "9.6",
+                "metadata": {
+                    "description": "PostgreSQL version"
+                }
+            },
+            "location": {
+                "type": "string",
+                "defaultValue": "[resourceGroup().location]",
+                "metadata": {
+                    "description": "Location for all resources."
+                }
+            },
+            "databaseskuFamily": {
+                "type": "string",
+                "defaultValue": "Gen5",
+                "metadata": {
+                    "description": "Azure database for PostgreSQL sku family"
+                }
+            }
+        },
+        "variables": {
+            "webAppName": "[concat(parameters('siteName'), '-', parameters('environment'), '-', uniqueString(resourceGroup().id))]",
+            "databaseName": "[concat(parameters('siteName'), 'db', parameters('environment'), uniqueString(resourceGroup().id))]",
+            "serverName": "[concat(parameters('siteName'), 'pgserver', parameters('environment'), uniqueString(resourceGroup().id))]",
+            "hostingPlanName": "[concat(parameters('siteName'), 'serviceplan', uniqueString(resourceGroup().id))]"
+        },
+        "resources": [
+            {
+                "apiVersion": "2016-09-01",
+                "name": "[variables('hostingPlanName')]",
+                "type": "Microsoft.Web/serverfarms",
+                "location": "[parameters('location')]",
+                "properties": {
+                    "name": "[variables('hostingPlanName')]",
+                    "workerSize": "1",
+                    "hostingEnvironment": "",
+                    "numberOfWorkers": 0
+                },
+                "sku": {
+                    "Tier": "Standard",
+                    "Name": "S1"
+                }
+            },
+            {
+                "apiVersion": "2016-08-01",
+                "name": "[variables('webAppName')]",
+                "type": "Microsoft.Web/sites",
+                "location": "[parameters('location')]",
+                "dependsOn": [
+                    "[concat('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
+                ],
+                "properties": {
+                    "name": "[variables('webAppName')]",
+                    "serverFarmId": "[variables('hostingPlanName')]",
+                    "hostingEnvironment": ""
+                },
+                "resources": [
+                    {
+                        "apiVersion": "2016-08-01",
+                        "name": "staging",
+                        "type": "slots",
+                        "tags": {
+                            "displayName": "Deployment Slot: staging"
+                        },
+                        "location": "[resourceGroup().location]",
+                        "dependsOn": [
+                            "[resourceId('Microsoft.Web/Sites/', variables('webAppName'))]"
+                        ],
+                        "properties": {},
+                        "resources": []
+                    },
+                    {
+                        "apiVersion": "2016-08-01",
+                        "name": "connectionstrings",
+                        "type": "config",
+                        "dependsOn": [
+                            "[concat('Microsoft.Web/sites/', variables('webAppName'))]"
+                        ],
+                        "properties": {
+                            "defaultConnection": {
+                                "value": "[concat('Database=', variables('databaseName'), ';Server=', reference(resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))).fullyQualifiedDomainName, ';User Id=', parameters('administratorLogin'),'@', variables('serverName'),';Password=', parameters('administratorLoginPassword'))]",
+                                "type": "PostgreSQL"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "apiVersion": "2017-12-01",
+                "type": "Microsoft.DBforPostgreSQL/servers",
+                "location": "[parameters('location')]",
+                "name": "[variables('serverName')]",
+                "sku": {
+                    "name": "[parameters('databaseSkuName')]",
+                    "tier": "[parameters('databaseSkuTier')]",
+                    "capacity": "[parameters('databaseSkucapacity')]",
+                    "size": "[parameters('databaseSkuSizeMB')]",
+                    "family": "[parameters('databaseskuFamily')]"
+                },
+                "properties": {
+                    "version": "[parameters('postgresqlVersion')]",
+                    "administratorLogin": "[parameters('administratorLogin')]",
+                    "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
+                    "storageMB": "[parameters('databaseSkuSizeMB')]"
+                },
+                "resources": [
+                    {
+                        "type": "firewallRules",
+                        "apiVersion": "2017-12-01",
+                        "dependsOn": [
+                            "[concat('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))]"
+                        ],
+                        "location": "[parameters('location')]",
+                        "name": "[concat(variables('serverName'),'firewall')]",
+                        "properties": {
+                            "startIpAddress": "0.0.0.0",
+                            "endIpAddress": "255.255.255.255"
+                        }
+                    },
+                    {
+                        "name": "[variables('databaseName')]",
+                        "type": "databases",
+                        "apiVersion": "2017-12-01",
+                        "properties": {
+                            "charset": "utf8",
+                            "collation": "English_United States.1252"
+                        },
+                        "dependsOn": [
+                            "[concat('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))]"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }    
+    ```
+
 ### Task 4: Create the dev environment and deploy the template to Azure
 
 Now that the template file has been uploaded, we'll deploy it several times to create each of our desired environments: "dev", "test", and "production". Let's start with the "dev" environment.
