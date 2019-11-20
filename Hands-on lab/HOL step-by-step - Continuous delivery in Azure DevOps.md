@@ -180,13 +180,15 @@ Now that the template file has been uploaded, we'll deploy it several times to c
 
 1.  In the **Azure Cloud Shell** terminal, using Bash mode, enter the following command and press **Enter**:
 
+    >**Note**: make sure you run the command from the folder containing the ARM template file.
+
     ```bash
     echo "Enter the Resource Group name:" &&
     read resourceGroupName &&
     echo "Enter the location (i.e. westus, centralus, eastus):" &&
     read location &&
     az group create --name $resourceGroupName --location "$location" &&
-    az group deployment create --resource-group $resourceGroupName --template-file "$HOME/azuredeploy.json"
+    az group deployment create --resource-group $resourceGroupName --template-file "azuredeploy.json"
     ```
     
     >**Note**: This command is designed to prompt us to enter the resource group name and Azure region (location) we want to deploy our resources to. The script then takes our inputs and passes them as parameters to the Azure CLI command that calls our recently uploaded template file.  Also be aware that you need to run this from a Bash terminal. 
@@ -195,7 +197,7 @@ Now that the template file has been uploaded, we'll deploy it several times to c
 
 2.  Enter the name of a resource group you want to deploy the resources to (i.e. TailspinToysRG). If it does not already exist, the template will create it. Then, press **Enter**.
 
-3.  Next, we're prompted to enter an Azure region (location) where we want to deploy our resources to (i.e. westus, centralus, eastus). Some examples are suggested by our command.
+3.  Next, we're prompted to enter an Azure region (location) where we want to deploy our resources to (i.e. westus, westeurope, centralus, eastus). Some examples are suggested by our command.
     
     ![In the Azure Cloud Shell window, we are prompted for the location we want to deploy to.](images/stepbystep/media/image45.png "Azure Cloud Shell window")
 
@@ -203,121 +205,55 @@ Now that the template file has been uploaded, we'll deploy it several times to c
    
 5.  Next, we're asked to enter a choice for environments we want to deploy to. The template will use our choice to concatenate the name of the environment with the name of the resource during provisioning. 
     
-   ![In the Azure Cloud Shell window, we are prompted for the environment we want to deploy to.](images/stepbystep/media/image46.png "Azure Cloud Shell")
+    ![In the Azure Cloud Shell window, we are prompted for the environment we want to deploy to.](images/stepbystep/media/image46.png "Azure Cloud Shell")
 
 6.  For this first run, select the "dev" environment by entering **1** and then pressing **Enter**. 
 
 7.  Next, we're asked to supply an administrator login (username) for the PostgreSQL server and database. This will be the username credential you would need to enter to connect to your newly created database.  
 
-    These credentials are not used further in the lab, so you can really enter anything that is valid here.  The administrator login can be "admin".
+    These credentials are not used further in the lab, so you can really enter anything that is valid here. 
 
-   ![In the Azure Cloud Shell window, we are prompted for the administrative username for the PostgreSQL server and database we want to create.](images/stepbystep/media/image47.png "Azure Cloud Shell")
+    >Note: the username must be somewhat complex and don't use admin or administrator, instead something like your-name1234
+
+    ![In the Azure Cloud Shell window, we are prompted for the administrative username for the PostgreSQL server and database we want to create.](images/stepbystep/media/image47.png "Azure Cloud Shell")
 
 8.  Enter a value for the "administratorLogin" and then press **Enter**.
 
-9.  Next, we're asked to supply an administrator password for the PostgreSQL server and database. This will be the password credential you would need to enter to connect to your newly created database.  The password need to fulfill the requirements, more than 8 chars, and containing upper/lower case characters, numbers and a symbol, so e.g. "Whatever2019!" should work. 
+9.  Next, we're asked to supply an administrator password for the PostgreSQL server and database. This will be the password credential you would need to enter to connect to your newly created database.  
 
-   ![In the Azure Cloud Shell window, we are prompted for the administrative password for the PostgreSQL server and database we want to create.](images/stepbystep/media/image48.png "Azure Cloud Shell")
+     >**Note**: The password need to fulfill the requirements, more than 8 chars, and containing upper/lower case characters, numbers and a symbol, so e.g. "Whatever2019!" should work. 
+
+    ![In the Azure Cloud Shell window, we are prompted for the administrative password for the PostgreSQL server and database we want to create.](images/stepbystep/media/image48.png "Azure Cloud Shell")
 
 10. Enter a value for the "administratorLoginPassword" and then press **Enter**.
 
     This will kick off the provisioning process which takes a few minutes to create all the resources for the environment. This is indicated by the "Running" text displayed at the bottom of the Azure Cloud Shell while the command is executing.
 
-   ![The Azure Cloud Shell is executing the template based on the parameters we provided.](images/stepbystep/media/image49.png "Azure Cloud Shell")
+    ![The Azure Cloud Shell is executing the template based on the parameters we provided.](images/stepbystep/media/image49.png "Azure Cloud Shell")
 
 11. After the template has completed, JSON is output to the Azure Cloud Shell window with a "Succeeded" message.
 
-   ![The Azure Cloud Shell has succeeded in executing the template based on the parameters we provided.](images/stepbystep/media/image50.png "Azure Cloud Shell")
+    ![The Azure Cloud Shell has succeeded in executing the template based on the parameters we provided.](images/stepbystep/media/image50.png "Azure Cloud Shell")
 
-  >**Note**: The above steps were used to provision the "dev" environment. Most of these same steps will be repeated for the "test" and "production" environments below.
+    >**Note**: The above steps were used to provision the "dev" environment. Most of these same steps will be repeated for the "test" and "production" environments below.
 
 ### Task 5: Create the test environment and deploy the template to Azure
 
-The following steps are very similar to what was done in the previous task with the exception that you are now creating the "test" environment.
 
-1.  In the Azure Cloud Shell terminal, enter the following command and press **Enter**:
-
-    ```bash
-    echo "Enter the Resource Group name:" &&
-    read resourceGroupName &&
-    echo "Enter the location (i.e. westus, centralus, eastus):" &&
-    read location &&
-    az group create --name $resourceGroupName --location "$location" &&
-    az group deployment create --resource-group $resourceGroupName --template-file "$HOME/azuredeploy.json"
-    ```
-    
-    ![In the Azure Cloud Shell window, the command has been entered is we are prompted for the name of the resource group we want to deploy to.](images/stepbystep/media/image44.png "Azure Cloud Shell window")
-
-2.  Enter the name of a resource group from earlier that you deployed the resources to (i.e. TailspinToysRG). Then, press **Enter**.
-    
-    ![In the Azure Cloud Shell window, we are prompted for the location we want to deploy to.](images/stepbystep/media/image45.png "Azure Cloud Shell window")
-
-3.  Enter the name of the Azure region from earlier and then press **Enter**.
-     
-   ![In the Azure Cloud Shell window, we are prompted for the environment we want to deploy to.](images/stepbystep/media/image46.png "Azure Cloud Shell")
-
-4.  For this next run, select the "test" environment by entering **2** and then pressing **Enter**. 
-
-   ![In the Azure Cloud Shell window, we are prompted for the administrative username for the PostgreSQL server and database we want to create.](images/stepbystep/media/image47.png "Azure Cloud Shell")
-
-5.  Enter the value for the "administratorLogin" and then press **Enter**.
-
-   ![In the Azure Cloud Shell window, we are prompted for the administrative password for the PostgreSQL server and database we want to create.](images/stepbystep/media/image48.png "Azure Cloud Shell")
-
-6.  Enter a value for the "administratorLoginPassword" and then press **Enter**.
-
-   ![The Azure Cloud Shell is executing the template based on the parameters we provided.](images/stepbystep/media/image49.png "Azure Cloud Shell")
-
-7.  After the template has completed, JSON is output to the Azure Cloud Shell window with a "Succeeded" message.
-
-   ![The Azure Cloud Shell has succeeded in executing the template based on the parameters we provided.](images/stepbystep/media/image50.png "Azure Cloud Shell")
+The following steps are very similar to what was done in the previous task with the exception that you are now creating the "test" environment.	Repeat the above steps and select to create the 2. test environment. You can use the same values as used in the dev environment.
 
 ### Task 6: Create the production environment and deploy the template to Azure
 
-The following steps are very similar to what was done in the previous task with the exception that you are now creating the "production" environment.
 
-1.  In the Azure Cloud Shell terminal, enter the following command and press **Enter**:
+The following steps are very similar to what was done in the previous task with the exception that you are now creating the "production" environment.	Repeat the above steps and select to create the 3. production environment. You can use the same values as used in the dev environment.
 
-    ```bash
-    echo "Enter the Resource Group name:" &&
-    read resourceGroupName &&
-    echo "Enter the location (i.e. westus, centralus, eastus):" &&
-    read location &&
-    az group create --name $resourceGroupName --location "$location" &&
-    az group deployment create --resource-group $resourceGroupName --template-file "$HOME/azuredeploy.json"
-    ```
-    
-    ![In the Azure Cloud Shell window, the command has been entered is we are prompted for the name of the resource group we want to deploy to.](images/stepbystep/media/image44.png "Azure Cloud Shell window")
+### Task 7: Review the resource group
 
-2.  Enter the name of a resource group from earlier that you deployed the resources to (i.e. TailspinToysRG). Then, press **Enter**.
-    
-    ![In the Azure Cloud Shell window, we are prompted for the location we want to deploy to.](images/stepbystep/media/image45.png "Azure Cloud Shell window")
+In the Azure Portal, navigate to the resource group where all of the resources have been deployed. It should look similar to the screenshot below.
 
-3.  Enter the name of the Azure region from earlier and then press **Enter**.
-     
-   ![In the Azure Cloud Shell window, we are prompted for the environment we want to deploy to.](images/stepbystep/media/image46.png "Azure Cloud Shell")
+>**Note**: The specific names of the resources will be slightly different than what you see in the screenshot based on the unique identities assigned.
 
-4.  For this next run, select the "production" environment by entering **3** and then pressing **Enter**. 
-
-   ![In the Azure Cloud Shell window, we are prompted for the administrative username for the PostgreSQL server and database we want to create.](images/stepbystep/media/image47.png "Azure Cloud Shell")
-
-5.  Enter the value for the "administratorLogin" and then press **Enter**.
-
-   ![In the Azure Cloud Shell window, we are prompted for the administrative password for the PostgreSQL server and database we want to create.](images/stepbystep/media/image48.png "Azure Cloud Shell")
-
-6.  Enter a value for the "administratorLoginPassword" and then press **Enter**.
-
-   ![The Azure Cloud Shell is executing the template based on the parameters we provided.](images/stepbystep/media/image49.png "Azure Cloud Shell")
-
-7.  After the template has completed, JSON is output to the Azure Cloud Shell window with a "Succeeded" message.
-
-   ![The Azure Cloud Shell has succeeded in executing the template based on the parameters we provided.](images/stepbystep/media/image50.png "Azure Cloud Shell")
-
-8.  In the Azure Portal, navigate to the resource group where all of the resources have been deployed. It should look similar to the screenshot below.
-
-    >**Note**: The specific names of the resources will be slightly different than what you see in the screenshot based on the unique identities assigned.
-
-    ![The Azure Portal is showing all the deployed resources for the resource group we have been using.](images/stepbystep/media/image51.png "Azure Cloud Shell")
+![The Azure Portal is showing all the deployed resources for the resource group we have been using.](images/stepbystep/media/image51.png "Azure Cloud Shell")
 
 ## Exercise 2: Create Azure DevOps project and Git Repository
 
@@ -353,9 +289,11 @@ In this exercise, you will create and configure an Azure DevOps account along wi
 
 In this Task, you will configure the Azure DevOps Git repository. You will configure the remote repository using Git and then push the source code up to Azure DevOps through the command line tools.
 
-1.  Open the **Azure Cloud Shell** to the folder where the Student Files were unzipped (i.e. studentfiles). Then, navigate to the **tailspintoysweb** folder which contains the source code for our web application.
+1.  Open a **Git command prompt** or the **Azure Cloud Shell** to the folder where the Student Files were unzipped (i.e. studentfiles). Then, navigate to the **tailspintoysweb** folder which contains the source code for our web application.
 
     > **Note**: If this folder doesn't exist ensure you followed the instructions in the Before the HOL.
+
+    >**Note**: If you are using the Azure Cloud Shell you will be prompted for credentials when using Git. The best way to authenticate is to use a [personal access token](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate), PAT, with a scope Code, Full permissions. Then use that PAT as password (leave user name empty) when prompted.
 
 2. Open Code to this folder by typing: 
    
@@ -476,80 +414,99 @@ Tasks are the building blocks of a pipeline. They describe the actions that are 
     >**Note**: The YAML below creates individual tasks for performing all the necessary steps to build and test our application along with publishing the artifacts inside Azure DevOps so they can be retrieved during the upcoming release pipeline process.
 
     ```yaml
+    - task: NuGetToolInstaller@0
+    displayName: 'Use NuGet 4.4.1'
+    inputs:
+        versionSpec: 4.4.1
+
+    # Node.js tool installer
+    # Finds or downloads and caches the specified version spec of Node.js and adds it to the PATH
+    - task: NodeTool@0
+    inputs:
+        versionSpec: '10.x' 
+
     - task: NuGetCommand@2
-      displayName: 'NuGet restore'
-      inputs:
+    displayName: 'NuGet restore'
+    inputs:
         restoreSolution: 'tailspintoysweb.csproj'
 
     - task: VSBuild@1
-      displayName: 'Build solution'
-      inputs:
+    displayName: 'Build solution'
+    inputs:
         solution: 'tailspintoysweb.csproj'
         msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\\"'
         platform: 'any cpu'
         configuration: 'release'
 
     - task: PublishSymbols@2
-      displayName: 'Publish symbols path'
-      inputs:
+    displayName: 'Publish symbols path'
+    inputs:
         SearchPattern: '**\bin\**\*.pdb'
         PublishSymbols: false
-      continueOnError: true
+    continueOnError: true
 
     - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact'
-      inputs:
+    displayName: 'Publish Artifact'
+    inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)'
         ArtifactName: 'TailspinToys-CI'
-      condition: succeededOrFailed()
+    condition: succeededOrFailed()
     ```
 
 11. The final result will look like the following:
 
     ```yml
+    trigger:
+    - master
+
     pool:
-      name: Hosted VS2017
-      demands:
-      - msbuild
-      - visualstudio
-      - vstest
+    name: Hosted VS2017
+    demands:
+    - msbuild
+    - visualstudio
+    - vstest
+
+    variables:
+    buildConfiguration: 'Release'
 
     steps:
     - task: NuGetToolInstaller@0
-      displayName: 'Use NuGet 4.4.1'
-      inputs:
+    displayName: 'Use NuGet 4.4.1'
+    inputs:
         versionSpec: 4.4.1
 
-    - task: NuGetCommand@2
-      displayName: 'NuGet restore'
-      inputs:
-        restoreSolution: 'tailspintoysweb.csproj'
-
+    # Node.js tool installer
+    # Finds or downloads and caches the specified version spec of Node.js and adds it to the PATH
     - task: NodeTool@0
     inputs:
-      versionSpec: '10.x' 
-    
+        versionSpec: '10.x' 
+
+    - task: NuGetCommand@2
+    displayName: 'NuGet restore'
+    inputs:
+        restoreSolution: 'tailspintoysweb.csproj'
+
     - task: VSBuild@1
-      displayName: 'Build solution'
-      inputs:
+    displayName: 'Build solution'
+    inputs:
         solution: 'tailspintoysweb.csproj'
         msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\\"'
         platform: 'any cpu'
         configuration: 'release'
 
     - task: PublishSymbols@2
-      displayName: 'Publish symbols path'
-      inputs:
+    displayName: 'Publish symbols path'
+    inputs:
         SearchPattern: '**\bin\**\*.pdb'
         PublishSymbols: false
-      continueOnError: true
+    continueOnError: true
 
     - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact'
-      inputs:
+    displayName: 'Publish Artifact'
+    inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)'
         ArtifactName: 'TailspinToys-CI'
-      condition: succeededOrFailed()
+    condition: succeededOrFailed()
     ```
 
 12. Choose the **Save and run** button to save our new pipeline and also kick off the first build.
