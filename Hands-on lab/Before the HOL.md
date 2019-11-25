@@ -55,22 +55,45 @@ In this lab, you will configure a developer environment and download the require
 
 ### Task 1: Use Azure Shell as your development environment
 
->**Note**: This workshop can be completed using only the Azure Cloud Shell.
+>**Note**: This workshop *can* be completed using only the Azure Cloud Shell.   However, if you are a developer you should take the opportunity to use your local setup to perform the exercises. 
+
+We have [a guide for local setup of the Azure CLI you can use ](http://hermit.no/how-to-setup-azure-cli-for-use-with-bash-shell-in-windows/).  
+
+If you don't have Git installed locally, it can be [downloaded and installed from here](https://git-scm.com/download/win)
 
 1.  From the Azure web portal, launch the **Azure Cloud Shell**. It has common Azure tools preinstalled and configured to use with your account.
 
     ![This is a screenshot of a icon used to launch the Azure Cloud Shell from the Azure Portal.](images/Setup/image3.png "Azure Cloud Shell launch icon")
 
-2.  From inside the Azure Cloud Shell type these commands to configure Git:
+2.  From inside the Azure Cloud Shell (or Azure CLI locally) type these commands to configure Git:
 
     ```
     git config --global user.name "<your name>"
     git config --global user.email <your email>
     ```
 
+3. If you run locally, you should login to Azure using the Azure CLI
+
+    ```
+    az login
+    ```
+
+4. Locally you can use a Visual Studio developer command shell, or you can use the Git Bash shell.  
+
+    Using Windows search, you can find either of these, searching for either 'developer' or 'bash'.
+
+    Whenever the text below, or in the Hands On Lab refers to Azure Cloud Shell, you should use the Bash shell with Azure CLI.  (For most of the commands, you can use either (Dev Cmd or Bash) but when executing the script to upload the ARM template, you must use Bash.)  
+
+    Note that if you didn't set up the alias shown in point 3 in the [guide](http://hermit.no/how-to-setup-azure-cli-for-use-with-bash-shell-in-windows/), then you must use the full name of the CLI like_
+
+    ```
+    az.cmd login
+    ```
+
+
 ### Task 2: Download the exercise files
 
-1.  Using the Azure Cloud Shell, you can download the file by executing the following command inside the Cloud Shell window (all on one line):
+1.  Using the Azure Cloud Shell, you can download the file by executing the following command inside the Cloud Shell window (all on one line) :
 
     ```
     curl -o studentfiles.zip https://cloudworkshop.blob.core.windows.net/agile-continous-delivery/studentfiles.zip
