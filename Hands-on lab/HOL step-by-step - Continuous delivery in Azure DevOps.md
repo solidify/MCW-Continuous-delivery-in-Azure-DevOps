@@ -479,12 +479,11 @@ Now that the template file has been uploaded, we'll deploy it several times to c
 ### Task 5: Create the test environment and deploy the template to Azure
 
 
-The following steps are very similar to what was done in the previous task with the exception that you are now creating the "test" environment.	Repeat the above steps and select to create the 2. test environment. You can use the same values as used in the dev environment.
+The following steps are very similar to what was done in the previous task with the exception that you are now creating the "test" environment. Repeat the above steps and select to create the 2. test environment. You can use the same values as used in the dev environment.
 
 ### Task 6: Create the production environment and deploy the template to Azure
 
-
-The following steps are very similar to what was done in the previous task with the exception that you are now creating the "production" environment.	Repeat the above steps and select to create the 3. production environment. You can use the same values as used in the dev environment.
+The following steps are very similar to what was done in the previous task with the exception that you are now creating the "production" environment. Repeat the above steps and select to create the 3. production environment. You can use the same values as used in the dev environment.
 
 ### Task 7: Review the resource group
 
@@ -700,42 +699,42 @@ The *pool* section specifies which pool to use for a job of the pipeline. It als
 
     ```yaml
     - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.4.1'
-    inputs:
-        versionSpec: 4.4.1
+      displayName: 'Use NuGet 4.4.1'
+      inputs:
+         versionSpec: 4.4.1
 
     # Node.js tool installer
     # Finds or downloads and caches the specified version spec of Node.js and adds it to the PATH
     - task: NodeTool@0
-    inputs:
+      inputs:
         versionSpec: '10.x' 
 
     - task: NuGetCommand@2
-    displayName: 'NuGet restore'
-    inputs:
+      displayName: 'NuGet restore'
+      inputs:
         restoreSolution: 'tailspintoysweb.csproj'
 
     - task: VSBuild@1
-    displayName: 'Build solution'
-    inputs:
+      displayName: 'Build solution'
+      inputs:
         solution: 'tailspintoysweb.csproj'
         msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\\"'
         platform: 'any cpu'
         configuration: 'release'
 
     - task: PublishSymbols@2
-    displayName: 'Publish symbols path'
-    inputs:
+      displayName: 'Publish symbols path'
+      inputs:
         SearchPattern: '**\bin\**\*.pdb'
         PublishSymbols: false
-    continueOnError: true
+      continueOnError: true
 
     - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact'
-    inputs:
+      displayName: 'Publish Artifact'
+      inputs:
         PathtoPublish: '$(build.artifactstagingdirectory)'
         ArtifactName: 'TailspinToys-CI'
-    condition: succeededOrFailed()
+      condition: succeededOrFailed()
     ```
 
 11. The final result will look like the following:
@@ -752,7 +751,7 @@ The *pool* section specifies which pool to use for a job of the pipeline. It als
       - vstest
 
     variables:
-    buildConfiguration: 'Release'
+      buildConfiguration: 'Release'
 
     steps:
     - task: NuGetToolInstaller@0
@@ -1102,23 +1101,23 @@ Duration: 30 Minutes
 In this exercise, you will first set up a Pull request policy for your master branch, then you will create a short-lived task branch, make a small code change, commit and push the code, and submit a pull request. 
 You'll then merge the pull request into the master branch which triggers an automated build and release of the application.
 
-In the tasks below, you will make changes directly through the Azure DevOps web interface. These steps could also be performed locally through an IDE of your choosing or using the Azure Cloud Shell Code Editor.
+In the tasks below, you will make changes directly through the Azure DevOps web interface. These steps could also be performed locally through an IDE of your choosing or using the command line.
 
 ### Task 1: Set up a Pull Request policy
 
 1.  Select the "Repos" menu item from the left-hand navigation. Then, choose "Branches".
 
-Start creating by doing the steps 1-3 below
+Start creating by doing the steps 1-3 in the screenshot below
 
 ![](images/stepbystep/media/PR-1.png)
 
-2.  Then enable the policy by checking 1 and 2 in image below, and then click 3 to enable a build to run when the PR is created.  Inside that dialog, choose the correct build definition in 4, then set a nice name in 5. 
+2.  Then enable the policy by checking 1 and 2 in screenshot below, and then click 3 to enable a build to run when the PR is created.  Inside that dialog, choose the correct build definition in 4, then set a nice name in 5.
 
-The first check enables the build policy to require a work item to be included with the PR.  It may be added with one of the commits, or added directly to the PR. 
+The first check enables the build policy to require a work item to be included with the PR.  It may be added with one of the commits, or added directly to the PR.
 
 (Notice: If you *do* enable this, which is the recommended setup, then you also must add a workitem in your process below with the code changes. Ignore this for the workshop if you dont want to do that.)
 
-The second check is to ensure that if anyone comments on this PR during the peer review phase, then those comments have to be resolved. 
+The second check is to ensure that if anyone comments on this PR during the peer review phase, then those comments have to be resolved.
 
 ![](images/stepbystep/media/PR-2.png)
 
