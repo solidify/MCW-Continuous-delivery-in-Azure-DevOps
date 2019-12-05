@@ -9,7 +9,7 @@ Before the hands-on lab setup guide
 </div>
 
 <div class="MCWHeader3">
-August 2019
+December 2019
 </div>
 
 Information in this document, including URL and other Internet Web site references, is subject to change without notice. Unless otherwise noted, the example companies, organizations, products, domain names, e-mail addresses, logos, people, places, and events depicted herein are fictitious, and no association with any real company, organization, product, domain name, e-mail address, logo, person, place or event is intended or should be inferred. Complying with all applicable copyright laws is the responsibility of the user. Without limiting the rights under copyright, no part of this document may be reproduced, stored in or introduced into a retrieval system, or transmitted in any form or by any means (electronic, mechanical, photocopying, recording, or otherwise), or for any purpose, without the express written permission of Microsoft Corporation.
@@ -51,8 +51,6 @@ In this lab, you will configure a developer environment and download the require
 
 -   Microsoft Azure subscription <http://azure.microsoft.com/en-us/pricing/free-trial/>
 
->**Note**: If you meet both of the above requirements, skip to Task 2 below.
-
 ### Task 1: Use Azure Shell as your development environment
 
 >**Note**: This workshop *can* be completed using only the Azure Cloud Shell.   However, if you are a developer you should take the opportunity to use your local setup to perform the exercises. 
@@ -61,14 +59,17 @@ We have [a guide for local setup of the Azure CLI you can use ](http://hermit.no
 
 If you don't have Git installed locally, it can be [downloaded and installed from here](https://git-scm.com/download/win)
 
-1.  From the Azure web portal, launch the **Azure Cloud Shell**. It has common Azure tools preinstalled and configured to use with your account.
+1.  In a web browser, navigate to https://shell.azure.com. Alternatively, from the Azure web portal, launch the **Azure Cloud Shell**. It has common Azure tools preinstalled and configured to use with your account.
 
     ![This is a screenshot of a icon used to launch the Azure Cloud Shell from the Azure Portal.](images/Setup/image3.png "Azure Cloud Shell launch icon")
 
 2.  From inside the Azure Cloud Shell (or Azure CLI locally) type these commands to configure Git:
 
-    ```
+    ```bash
     git config --global user.name "<your name>"
+    ```
+
+    ```bash
     git config --global user.email <your email>
     ```
 
@@ -95,7 +96,7 @@ If you don't have Git installed locally, it can be [downloaded and installed fro
 
 1.  Using the Azure Cloud Shell, you can download the file by executing the following command inside the Cloud Shell window (all on one line) :
 
-    ```
+    ```bash
     curl -o studentfiles.zip https://cloudworkshop.blob.core.windows.net/agile-continous-delivery/studentfiles.zip
     ```
 
@@ -113,8 +114,9 @@ If you don't have Git installed locally, it can be [downloaded and installed fro
    
 4.  Inside the **studentfiles** folder, there are two folders named **armtemplate** and **tailspintoysweb**. The workshop will refer to these folders throughout the exercises.
 
->**Note**: Using the Azure Cloud Shell, you can load the integrated code editor at any time with the following command:
-```
+>**Note**: Using the Azure Cloud Shell, you
+ can load the integrated code editor (Cloud Shell Editor) at any time with the following command:
+```bash
 code .
 ```
 
