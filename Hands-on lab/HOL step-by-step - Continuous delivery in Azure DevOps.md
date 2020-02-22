@@ -847,7 +847,7 @@ In this exercise, you will create a release pipeline in Azure DevOps that perfor
 
 10. In case a 'Service connection operation failed' dialog pops up, follow the next steps to manually create a service connection. You would also like to follow these steps in case you want to granularly configure permissions for Azure DevOps to a single resource group rather than the entire subscription.
 
-    Otherwise, you may skip to step ****.
+**If you successfully authorized the Azure Subsription you may skip to step 34.**
 
     > **Note**: The following workaround steps must be performed by a Global Administrator of the tenant associated to the Azure subscription, or at least an individual who has access to a user account with either of these Azure Active Directory roles: Application administrator, Application developer, Cloud application administrator.
         
