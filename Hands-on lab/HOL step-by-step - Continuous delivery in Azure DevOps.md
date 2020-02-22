@@ -462,7 +462,6 @@ Now that the template file has been uploaded, we'll deploy it several times to c
 
      >**Note**: The password need to fulfill the requirements, more than 8 chars, and containing upper/lower case characters, numbers and a symbol, so e.g. "Whatever2019!" should work. 
 
-    ![In the Azure Cloud Shell window, we are prompted for the administrative password for the PostgreSQL server and database we want to create.](images/stepbystep/media/image48.png "Azure Cloud Shell")
 
 6. Enter a value for the "administratorLoginPassword" and then press **Enter**.
 
