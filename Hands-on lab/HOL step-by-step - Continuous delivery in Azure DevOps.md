@@ -180,6 +180,19 @@ In this Task, you will the Git repository to your working directory. And push ch
 
     ![The newly created files show up in Repos > Files section.](images/stepbystep/media/image136.png "Success confirmation page")
 
+## Exercise 2: Create Dockerfile
+
+** TODO **
+
+- describe purpose of docker file here. And what we do in this excersice. 
+
+1. Create a file named 'Dockerfile'
+
+2. Add image and steps in the container.
+
+3. Test to see if your file works. 
+run the container locally and see that the tailspintoys app runs on port 5000.
+
 ## Exercise 3: Create Azure DevOps build pipeline
 
 Duration: 15 Minutes
