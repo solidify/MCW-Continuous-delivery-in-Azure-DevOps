@@ -109,7 +109,7 @@ In this exercise, you will create and configure an Azure DevOps account, an Agil
 
 7. On the *Repos* page for the **TailspinToys** repository locate the "Import a repository" section and click the **Import** button. Then insert the url to the base repo in the pane that show up. Then click import. Your repo should now be initiated.
 
-    ![In the "Add some code!" window, URLs appear to clone to your computer or push an existing repository from command line.](images/stepbystep/media/import_repo_az_devops.png "TailspinToys is empty. Add some code!")
+    ![In the "Add some code!" window, URLs appear to clone to your computer or push an existing repository from command line.](images/stepbystep/media/import_repo_az_devops_marked.png "TailspinToys is empty. Add some code!")
 
 ### Task 3: Clone the Tailspin Toys repository to your local machine or cloud shell
 
@@ -178,7 +178,7 @@ In this Task, you will the Git repository to your working directory. And push ch
 
 15. Leave that command prompt window open and switch back to the web browser window for Azure DevOps from the previous Task. Navigate to the Repos > Files page which shows the files in the repository. You may need to refresh the page to see the updated files. Your source code is now appearing in Azure DevOps.
 
-    ![The newly created files show up in Repos > Files section.](images/stepbystep/media/image136.png "Success confirmation page")
+    ![The newly created files show up in Repos > Files section.](images/stepbystep/media/clean_repo.png "Success confirmation page")
 
 ## Exercise 2: Create Dockerfile
 
