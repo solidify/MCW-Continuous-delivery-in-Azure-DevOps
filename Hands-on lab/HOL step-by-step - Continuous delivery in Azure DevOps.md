@@ -168,7 +168,7 @@ In this Task, you will the Git repository to your working directory. And push ch
 14. Push the changes up to the Azure DevOps repository with the following command:
 
     ```
-    git push -u origin --all
+    git push
     ```
 
 15. Leave that command prompt window open and switch back to the web browser window for Azure DevOps from the previous Task. Navigate to the Repos > Files page which shows the files in the repository. You may need to refresh the page to see the updated files. Your source code is now appearing in Azure DevOps.
