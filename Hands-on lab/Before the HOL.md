@@ -90,30 +90,6 @@ If you don't have Git installed locally, it can be [downloaded and installed fro
     ```
     az.cmd login
     ```
-
-
-### Task 2: Download the exercise files
-
-1.  Using the Azure Cloud Shell, you can download the file by executing the following command inside the Cloud Shell window (all on one line) :
-
-    ```bash
-    curl -o studentfiles.zip https://cloudworkshop.blob.core.windows.net/agile-continous-delivery/studentfiles.zip
-    ```
-
-2.  Extract the contents of the file to the new folder. Using the Azure Cloud Shell, you can execute the following command inside the Cloud Shell window:
-
-    ```bash
-    unzip studentfiles.zip
-    ```
-
-3.  When unzipped, there will be a new folder named **studentfiles**. Navigate to the newly created **studentfiles** directory.
-
-    ```bash
-    cd studentfiles
-    ```
-   
-4.  Inside the **studentfiles** folder, there are two folders named **armtemplate** and **tailspintoysweb**. The workshop will refer to these folders throughout the exercises.
-
 >**Note**: Using the Azure Cloud Shell, you
  can load the integrated code editor (Cloud Shell Editor) at any time with the following command:
 ```bash
