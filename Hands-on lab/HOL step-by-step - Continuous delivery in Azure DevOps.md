@@ -9,7 +9,7 @@ Hands-on lab step-by-step
 </div>
 
 <div class="MCWHeader3">
-December 2019
+June 2020
 </div>
 
 Information in this document, including URL and other Internet Web site references, is subject to change without notice. Unless otherwise noted, the example companies, organizations, products, domain names, e-mail addresses, logos, people, places, and events depicted herein are fictitious, and no association with any real company, organization, product, domain name, e-mail address, logo, person, place or event is intended or should be inferred. Complying with all applicable copyright laws is the responsibility of the user. Without limiting the rights under copyright, no part of this document may be reproduced, stored in or introduced into a retrieval system, or transmitted in any form or by any means (electronic, mechanical, photocopying, recording, or otherwise), or for any purpose, without the express written permission of Microsoft Corporation.
@@ -34,7 +34,7 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 1: Create Azure DevOps Account](#task-1-create-azure-devops-account)
     - [Task 2: Clone the Tailspin Toys repository to your local machine or cloud shell](#Task-2-Clone-the-Tailspin-Toys-repository-to-your-local-machine-or-cloud-shell)
   - [Exercise 2: Create Dockerfile](#Exercise-2-Create-Dockerfile)
-    - [Task 1: TODO]()
+    - [Task 1: Create a Dockerfile](#Task-1-Create-a-Dockerfile)
   - [Exercise 3: Create Azure DevOps build pipeline](#exercise-3-create-azure-devops-build-pipeline)
     - [Task 1: Create a build pipeline](#task-1-create-a-build-pipeline)
   - [Exercise 4: Add release steps to the build pipeline](#exercise-4-add-release-steps-to-the-build-pipeline)
@@ -177,16 +177,81 @@ In this Task, you will the Git repository to your working directory. And push ch
 
 ## Exercise 2: Create Dockerfile
 
-** TODO **
+Duration: 10 Minutes
 
-- describe purpose of docker file here. And what we do in this excersice. 
+In this excersice we implement a container definition. We do this with a 'Dockerfile' and by defining all our steps inside it.
 
-1. Create a file named 'Dockerfile'
+Containers have multiple purposes. Among them are concistency, simplicity, and portability. Docker containers are the most videly spread container technology today. It is what we use here.
 
-2. Add image and steps in the container.
+Containers are a way to make sure that your build and runtime is the same wherever you run it - Portability. 
 
-3. Test to see if your file works. 
-run the container locally and see that the tailspintoys app runs on port 5000.
+To simplify the matter containers describe a set of steps that define the build and runtime environment - Simplicity. 
+
+When your container is defined, you know it will run with the same result wherever you run it - Concistency.
+
+### Task 1: Create a Dockerfile
+
+1. Create a file called Dockerfile 
+
+Right click in your editor -> choose 'New File'. 
+Or write `touch Dockerfile` in a terminal.
+
+2. Install node
+
+Add RUN steps for installing nodejs in the container. We need this to build the frontend of the TailspinToys app.
+
+In your Dockerfile add:
+```
+RUN apt-get update -yq 
+RUN apt-get install curl gnupg -yq 
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs
+```
+
+3. Add source code and build the app
+
+Load the container with source code and build the code.
+
+First include the code by adding these lines in your Dockerfile: 
+```
+WORKDIR /src
+COPY ["src/TailspinToysWeb/TailspinToysWeb.csproj", "src/TailspinToysWeb/"]
+```
+
+Then we will build the code in the container by adding:  
+```
+RUN dotnet restore "src/TailspinToysWeb/TailspinToysWeb.csproj"
+COPY . .
+WORKDIR "/src/src/TailspinToysWeb"
+RUN dotnet build "TailspinToysWeb.csproj" -c Release -o /app/build
+
+# publish the app
+FROM build AS publish
+RUN dotnet publish "TailspinToysWeb.csproj" -c Release -o /app/publish
+```
+
+We use dotnet publish to packet the sourcode in a proper way. 
+
+4. Running the app in the container
+
+Now the container has the code and all dependencies it needs.
+
+We have to tell it to run our application:
+```
+FROM base AS final
+ENV ASPNETCORE_URLS http://+:5000
+WORKDIR /app
+EXPOSE 5000
+# EXPOSE 5001
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "TailspinToysWeb.dll"]
+```
+
+5. See if it works?
+We have to have a pipeline to test the container i azure devops. Commit and push your new dockerfile to your azure devops repo. Then continue to Excercise 3 below.
+
+If you have docker installed on your local machine you can now build and run the container. While running the container you can visit localhost:5000 to see that the app is running.
+
 
 ## Exercise 3: Create Azure DevOps build pipeline
 
