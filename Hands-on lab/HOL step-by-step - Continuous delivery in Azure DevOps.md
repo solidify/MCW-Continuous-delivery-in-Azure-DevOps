@@ -37,13 +37,14 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 1: Create a Dockerfile](#Task-1-Create-a-Dockerfile)
   - [Exercise 3: Create Azure DevOps build pipeline](#exercise-3-create-azure-devops-build-pipeline)
     - [Task 1: Create a build pipeline](#task-1-create-a-build-pipeline)
-  - [Exercise 4: Add release steps to the build pipeline](#exercise-4-add-release-steps-to-the-build-pipeline)
-    - [Task 1: Add a service connection to the azure subscription](#task-1-add-a-service-connection-to-the-azure-subscriptions)
-    - [Task 2: Upgrade the build pipeline to a multistage pipeline and add deployment to dev](#task-2-upgrade-the-build-pipeline-to-a-multistage-pipeline-and-add-deployment-to-dev)
-    - [Task 3: Add test and production environments to the pipeline](#task-3-add-test-and-production-environments-to-the-pipeline)
-  - [Exercise 5: Trigger a build and release](#exercise-5-trigger-a-build-and-release)
+  - [Exercise 5: Add release steps to the build pipeline](#exercise-5-add-release-steps-to-the-build-pipeline)
+    - [Task 1: Add a service connection to the azure subscription](#task-1-add-a-service-connection-to-the-azure-subscription)
+    - [Task 2: Enable admin account on the Azure Container registry](#task-2-enable-admin-account-on-the-azure-container-registry)
+    - [Task 3: Upgrade the build pipeline to a multistage pipeline and add deployment to dev](#task-3-upgrade-the-build-pipeline-to-a-multistage-pipeline-and-add-deployment-to-dev)
+    - [Task 4: Add test and production environments to the pipeline](#task-4-add-test-and-production-environments-to-the-pipeline)
+  - [Exercise 6: Trigger a build and release](#exercise-6-trigger-a-build-and-release)
     - [Task 1: Manually queue a new build and follow it through the release pipeline](#task-1-manually-queue-a-new-build-and-follow-it-through-the-release-pipeline)
-  - [Exercise 6: Set up a Pull Request policy, create a task branch and submit a pull request](#exercise-6-set-up-a-pull-request-policy-create-a-task-branch-and-submit-a-pull-request)
+  - [Exercise 7: Set up a Pull Request policy, create a task branch and submit a pull request](#exercise-7-set-up-a-pull-request-policy-create-a-task-branch-and-submit-a-pull-request)
     - [Task 1: Set up a Pull Request policy](#task-1-set-up-a-pull-request-policy)
     - [Task 2: Create a new branch](#task-2-create-a-new-branch)
     - [Task 3: Make a code change to the task branch](#task-3-make-a-code-change-to-the-task-branch)
@@ -446,9 +447,9 @@ The *pool* section specifies which pool to use for a job of the pipeline. It als
     
     Congratulations! You have just created your first build pipeline. In the next exercise, we will create a release pipeline that deploys your successful builds.
 
-## Exercise 4: Add release steps to the build pipeline
+## Exercise 5: Add release steps to the build pipeline
 
-Duration: 30 Minutes
+Duration: 45 Minutes
 
 In this exercise, you will make changes to the build pipeline, so that it becomes a multistage pipeline. This means that the pipeline containes stages for performing automated deployments of build artifacts to Microsoft Azure. The multistage pipeline will first build the artifact and then deploy to three stages: dev, test, and production.
 
@@ -528,7 +529,13 @@ Before starting on the pipeline we have to first add a service connection we can
 
 31. Choose the **Verify and save** button to validate the typed in information and create the new connection.
 
-### Task 2: Upgrade the build pipeline to a multistage pipeline and add deployment to dev
+### Task 2: Enable admin account on the Azure Container registry
+
+1. Azure App service need to be able to pull our container image from the Azure Container registry created earlier, and the one that we are pusing images to in our build definition, and to be able to do that we need to enable Admin access on the registry. Follow the guide listed here by Microsoft https://docs.microsoft.com/en-us/azure/container-registry/container-registry-authentication#admin-account
+
+2. Create a secret variable in the build definition where you copy in the password for the container registry and add the username(the same value as the name of the registry) into a variable in the yaml file for the builddefiniton
+
+### Task 3: Upgrade the build pipeline to a multistage pipeline and add deployment to dev
 
 1. First we need to add the correct keywords to our current build definition so that we can add more stages. Either open the azure-pipelines.yml file in Visual Studio code, or on the web and make sure the pipeline looks like this
 
@@ -543,18 +550,14 @@ Before starting on the pipeline we have to first add a service connection we can
       - job: 'Build'
         displayName: 'Build job'
         pool:
-          vmImage: 'windows-latest'
-          demands:
-          - msbuild
-          - visualstudio
-          - vstest
-        variables:
-          buildConfiguration: 'Release'
+          vmImage: 'ubuntu-latest'
+
         steps:
-        - task: NuGetToolInstaller@0
-          displayName: 'Use NuGet 4.4.1'
+        - task: Docker@2
+          displayName: Login to ACR
           inputs:
-            versionSpec: 4.4.1
+            command: login
+            containerRegistry: $(dockerRegistry)
         # rest of file is not shown, but all existing tasks needs to be here
     ```
 2. Next we are going to add a stage for deployment to dev. The **dependsOn** setting indicates that this stage has to run after the Build stage is completed
@@ -572,39 +575,71 @@ Before starting on the pipeline we have to first add a service connection we can
       jobs:
       - deployment: Deploy
         pool:
-          vmImage: 'windows-latest'
+          vmImage: 'ubuntu-latest'
         environment: dev
     ```
 
-4. The next part is selecting what kind of strategy we want to use in our rollout phase, and if there are any predeploy or postdeploy steps we would like to do. Currently our setup is simple, so only a single deployment against a fixed set of resources
+4. The next part is selecting what kind of strategy we want to use in our rollout phase, and if there are any predeploy or postdeploy steps we would like to do. Currently our setup is simple, so only a single deployment that creates the infrastructure and deployes a fixed set of resources
     ```yml
     strategy:
-        runOnce:
+      runOnce:
         deploy:
-            steps:
-            - task: AzureRmWebAppDeployment@4
+          steps:
+          - task: AzureResourceGroupDeployment@2
+            displayName: 'Deploy template'
             inputs:
-                ConnectionType: 'AzureRM'
-                azureSubscription: 'TailspinAzureServiceConnection'
-                appType: 'webApp'
-                WebAppName: 'tailspintoys-dev-idfromresourcegroup'
-                deployToSlotOrASE: true
-                ResourceGroupName: 'TailspinToysRG'
-                SlotName: 'staging'
-                packageForLinux: '$(Agent.BuildDirectory)/**/tailspintoysweb.zip'
-
-            - task: AzureAppServiceManage@0
-            displayName: 'Swap Slots: tailspintoys-dev-idfromresourcegroup'
-            inputs:
-                azureSubscription: 'TailspinAzureServiceConnection'
-                WebAppName: 'tailspintoys-dev-idfromresourcegroup'
-                ResourceGroupName: 'TailspinToysRG'
-                SourceSlot: staging
+              deploymentScope: 'Resource Group'
+              ConnectedServiceName: $(azureSubscription)
+              subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
+              action: 'Create Or Update Resource Group'
+              resourceGroupName: $(resourceGroupName)
+              location: 'West Europe'
+              templateLocation: 'Linked artifact'
+              csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
+              overrideParameters: -environment dev -administratorLogin databaseAdminUser -administratorLoginPassword $(secretPasswordVariable)
+              deploymentOutputs: ArmOutputs
     ```
+This uses the arm template we pushed as artifacts in the buildpipeline to provision our dev website and the dev database. Important parts here is using the service connection created in the previouse step as the connected service name and using the secret password variable from the builddefinition itself.
 
 5. If you are using the web editor you can either add task where the cursor is, or edit a existing one by pressing settings
    
    ![Screen showing the web editor](images/stepbystep/media/Multistage-6.png "Azure DevOps Pipeline web editor")
+
+6. Our ARM template contains an output variable of out new website and we now need to parse that output of the webappname so we can use that to target our deployment in azure
+    ```yml
+    - pwsh: |
+        $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
+        $webAppName = $armOutputObj.webappname.value
+        Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
+      displayName: "Parsing outputs from ARM deployment to pipeline variables"
+    ```
+7. Now we are using Azure CLI to actually deploy our containerimage into our Azure App Service. We are using Azure CLI to showcase here that we can do that from the pipeline, and the fact that the AzureAppService deployement task does not work with Azure Container registry, only with Docker Hub. We also deploy to a staging slog and then swap to production slot after the deployment is done and the website is ready to take traffic.
+    ```yml
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az --version
+          az account show
+          az webapp config container set `
+                    --resource-group $(resourceGroupName) `
+                    --name $(webappname) `
+                    --docker-custom-image-name $(imageName) `
+                    --docker-registry-server-password $(acrContainerRegistryPassword) `
+                    --docker-registry-server-url https://<registryName>.azurecr.io `
+                    --docker-registry-server-user <registryName> `
+                    --slot staging
+
+    - task: AzureAppServiceManage@0
+      displayName: 'Swap Slots: $(resourceGroupName)'
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        WebAppName: $(webappname)
+        ResourceGroupName: $(resourceGroupName)
+        SourceSlot: staging
+    ```
 
 6. The final result will look like the following:
 
@@ -615,70 +650,123 @@ Before starting on the pipeline we have to first add a service connection we can
       jobs:
       - deployment: Deploy
         pool:
-          vmImage: 'windows-latest'
+          vmImage: 'ubuntu-latest'
         environment: dev
         strategy:
           runOnce:
             deploy:
               steps:
-              - task: AzureRmWebAppDeployment@4
+              - task: AzureResourceGroupDeployment@2
+                displayName: 'Deploy template'
                 inputs:
-                  ConnectionType: 'AzureRM'
-                  azureSubscription: 'TailspinAzureServiceConnection'
-                  appType: 'webApp'
-                  WebAppName: 'tailspintoys-dev-75tixu4fyw23y'
-                  deployToSlotOrASE: true
-                  ResourceGroupName: 'TailspinToysRG'
-                  SlotName: 'staging'
-                  packageForLinux: '$(Agent.BuildDirectory)/**/tailspintoysweb.zip'
+                  deploymentScope: 'Resource Group'
+                  ConnectedServiceName: $(azureSubscription)
+                  subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
+                  action: 'Create Or Update Resource Group'
+                  resourceGroupName: $(resourceGroupName)
+                  location: 'West Europe'
+                  templateLocation: 'Linked artifact'
+                  csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
+                  overrideParameters: -environment dev -administratorLogin JallaJalla -administratorLoginPassword $(dbPassword)
+                  deploymentOutputs: ArmOutputs
+              
+              - pwsh: |
+                  $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
+                  $webAppName = $armOutputObj.webappname.value
+                  Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
+                displayName: "Parsing outputs from ARM deployment to pipeline variables"
+              
+              - task: AzureCLI@2
+                inputs:
+                  azureSubscription: $(azureSubscription)
+                  scriptType: 'pscore'
+                  scriptLocation: 'inlineScript'
+                  inlineScript: |
+                    az --version
+                    az account show
+                    az webapp config container set `
+                              --resource-group $(resourceGroupName) `
+                              --name $(webappname) `
+                              --docker-custom-image-name $(imageName) `
+                              --docker-registry-server-password $(acrContainerRegistryPassword) `
+                              --docker-registry-server-url https://<registryName>.azurecr.io `
+                              --docker-registry-server-user <registryName> `
+                              --slot staging
 
               - task: AzureAppServiceManage@0
-                displayName: 'Swap Slots: tailspintoys-dev-75tixu4fyw23y'
+                displayName: 'Swap Slots: $(resourceGroupName)'
                 inputs:
-                  azureSubscription: 'TailspinAzureServiceConnection'
-                  WebAppName: 'tailspintoys-dev-75tixu4fyw23y'
-                  ResourceGroupName: 'TailspinToysRG'
+                  azureSubscription: '$(azureSubscription)'
+                  WebAppName: $(webappname)
+                  ResourceGroupName: $(resourceGroupName)
                   SourceSlot: staging
+              
     ```
 
 7. Congratulations! You can now save the file, and push it to the master branch and wait for the trigger to kick in to deploy it to your dev web site
 
-### Task 3: Add test and production environments to the pipeline
+### Task 4: Add test and production environments to the pipeline
 
 1. Now open the azure-pipelines.yml file once more and copy/paste the DeployDev stage twice, one for test and one for production. You need to update the **dependsOn** tag to match the correct previous stage and the name of the environment to the current stage. Also the name of the webapp will now contain test and production instead of dev.
 
 2. All the release stages in the pipeline will now look like this
     
-    ```yml    
+    ```yml
     - stage: 'DeployDev'
       displayName: 'Deploy the web application to Dev'
       dependsOn: Build
       jobs:
       - deployment: Deploy
         pool:
-          vmImage: 'windows-latest'
+          vmImage: 'ubuntu-latest'
         environment: dev
         strategy:
           runOnce:
             deploy:
               steps:
-              - task: AzureRmWebAppDeployment@4
+              - task: AzureResourceGroupDeployment@2
+                displayName: 'Deploy template'
                 inputs:
-                  ConnectionType: 'AzureRM'
-                  azureSubscription: 'TailspinAzureServiceConnection'
-                  appType: 'webApp'
-                  WebAppName: 'tailspintoys-dev-idfromresourcegroup'
-                  deployToSlotOrASE: true
-                  ResourceGroupName: 'TailspinToysRG'
-                  SlotName: 'staging'
-                  packageForLinux: '$(Agent.BuildDirectory)/**/tailspintoysweb.zip'
+                  deploymentScope: 'Resource Group'
+                  ConnectedServiceName: $(azureSubscription)
+                  subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
+                  action: 'Create Or Update Resource Group'
+                  resourceGroupName: $(resourceGroupName)
+                  location: 'West Europe'
+                  templateLocation: 'Linked artifact'
+                  csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
+                  overrideParameters: -environment dev -administratorLogin JallaJalla -administratorLoginPassword $(dbPassword)
+                  deploymentOutputs: ArmOutputs
+              
+              - pwsh: |
+                  $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
+                  $webAppName = $armOutputObj.webappname.value
+                  Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
+                displayName: "Parsing outputs from ARM deployment to pipeline variables"
+              
+              - task: AzureCLI@2
+                inputs:
+                  azureSubscription: $(azureSubscription)
+                  scriptType: 'pscore'
+                  scriptLocation: 'inlineScript'
+                  inlineScript: |
+                    az --version
+                    az account show
+                    az webapp config container set `
+                              --resource-group $(resourceGroupName) `
+                              --name $(webappname) `
+                              --docker-custom-image-name $(imageName) `
+                              --docker-registry-server-password $(acrContainerRegistryPassword) `
+                              --docker-registry-server-url https://<registryName>.azurecr.io `
+                              --docker-registry-server-user <registryName> `
+                              --slot staging
 
               - task: AzureAppServiceManage@0
-                displayName: 'Swap Slots: tailspintoys-dev-<id-from-resourcegroup>'
+                displayName: 'Swap Slots: $(resourceGroupName)'
                 inputs:
-                  azureSubscription: 'TailspinAzureServiceConnection'
-                  WebAppName: 'tailspintoys-dev-<id-from-resourcegroup>'
-                  ResourceGroupName: 'TailspinToysRG'
+                  azureSubscription: '$(azureSubscription)'
+                  WebAppName: $(webappname)
+                  ResourceGroupName: $(resourceGroupName)
                   SourceSlot: staging
     
     - stage: 'DeployTest'
@@ -687,29 +775,55 @@ Before starting on the pipeline we have to first add a service connection we can
       jobs:
       - deployment: Deploy
         pool:
-          vmImage: 'windows-latest'
+          vmImage: 'ubuntu-latest'
         environment: test
         strategy:
           runOnce:
             deploy:
               steps:
-              - task: AzureRmWebAppDeployment@4
+              - task: AzureResourceGroupDeployment@2
+                displayName: 'Deploy template'
                 inputs:
-                  ConnectionType: 'AzureRM'
-                  azureSubscription: 'TailspinAzureServiceConnection'
-                  appType: 'webApp'
-                  WebAppName: 'tailspintoys-test-idfromresourcegroup'
-                  deployToSlotOrASE: true
-                  ResourceGroupName: 'TailspinToysRG'
-                  SlotName: 'staging'
-                  packageForLinux: '$(Agent.BuildDirectory)/**/tailspintoysweb.zip'
+                  deploymentScope: 'Resource Group'
+                  ConnectedServiceName: $(azureSubscription)
+                  subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
+                  action: 'Create Or Update Resource Group'
+                  resourceGroupName: $(resourceGroupName)
+                  location: 'West Europe'
+                  templateLocation: 'Linked artifact'
+                  csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
+                  overrideParameters: -environment test -administratorLogin JallaJalla -administratorLoginPassword $(dbPassword)
+                  deploymentOutputs: ArmOutputs
+              
+              - pwsh: |
+                  $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
+                  $webAppName = $armOutputObj.webappname.value
+                  Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
+                displayName: "Parsing outputs from ARM deployment to pipeline variables"
+              
+              - task: AzureCLI@2
+                inputs:
+                  azureSubscription: $(azureSubscription)
+                  scriptType: 'pscore'
+                  scriptLocation: 'inlineScript'
+                  inlineScript: |
+                    az --version
+                    az account show
+                    az webapp config container set `
+                              --resource-group $(resourceGroupName) `
+                              --name $(webappname) `
+                              --docker-custom-image-name $(imageName) `
+                              --docker-registry-server-password $(acrContainerRegistryPassword) `
+                              --docker-registry-server-url https://<registryName>.azurecr.io `
+                              --docker-registry-server-user <registryName> `
+                              --slot staging
 
               - task: AzureAppServiceManage@0
-                displayName: 'Swap Slots: tailspintoys-test-idfromresourcegroup'
+                displayName: 'Swap Slots: $(resourceGroupName)'
                 inputs:
-                  azureSubscription: 'TailspinAzureServiceConnection'
-                  WebAppName: 'tailspintoys-test-idfromresourcegroup'
-                  ResourceGroupName: 'TailspinToysRG'
+                  azureSubscription: '$(azureSubscription)'
+                  WebAppName: $(webappname)
+                  ResourceGroupName: $(resourceGroupName)
                   SourceSlot: staging
 
     - stage: 'DeployProduction'
@@ -718,36 +832,62 @@ Before starting on the pipeline we have to first add a service connection we can
       jobs:
       - deployment: Deploy
         pool:
-          vmImage: 'windows-latest'
+          vmImage: 'ubuntu-latest'
         environment: production
         strategy:
           runOnce:
             deploy:
               steps:
-              - task: AzureRmWebAppDeployment@4
+              - task: AzureResourceGroupDeployment@2
+                displayName: 'Deploy template'
                 inputs:
-                  ConnectionType: 'AzureRM'
-                  azureSubscription: 'TailspinAzureServiceConnection'
-                  appType: 'webApp'
-                  WebAppName: 'tailspintoys-production-idfromresourcegroup'
-                  deployToSlotOrASE: true
-                  ResourceGroupName: 'TailspinToysRG'
-                  SlotName: 'staging'
-                  packageForLinux: '$(Agent.BuildDirectory)/**/tailspintoysweb.zip'
+                  deploymentScope: 'Resource Group'
+                  ConnectedServiceName: $(azureSubscription)
+                  subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
+                  action: 'Create Or Update Resource Group'
+                  resourceGroupName: $(resourceGroupName)
+                  location: 'West Europe'
+                  templateLocation: 'Linked artifact'
+                  csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
+                  overrideParameters: -environment production -administratorLogin JallaJalla -administratorLoginPassword $(dbPassword)
+                  deploymentOutputs: ArmOutputs
+              
+              - pwsh: |
+                  $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
+                  $webAppName = $armOutputObj.webappname.value
+                  Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
+                displayName: "Parsing outputs from ARM deployment to pipeline variables"
+              
+              - task: AzureCLI@2
+                inputs:
+                  azureSubscription: $(azureSubscription)
+                  scriptType: 'pscore'
+                  scriptLocation: 'inlineScript'
+                  inlineScript: |
+                    az --version
+                    az account show
+                    az webapp config container set `
+                              --resource-group $(resourceGroupName) `
+                              --name $(webappname) `
+                              --docker-custom-image-name $(imageName) `
+                              --docker-registry-server-password $(acrContainerRegistryPassword) `
+                              --docker-registry-server-url https://<registryName>.azurecr.io `
+                              --docker-registry-server-user <registryName> `
+                              --slot staging
 
               - task: AzureAppServiceManage@0
-                displayName: 'Swap Slots: tailspintoys-production-idfromresourcegroup'
+                displayName: 'Swap Slots: $(resourceGroupName)'
                 inputs:
-                  azureSubscription: 'TailspinAzureServiceConnection'
-                  WebAppName: 'tailspintoys-production-idfromresourcegroup'
-                  ResourceGroupName: 'TailspinToysRG'
+                  azureSubscription: '$(azureSubscription)'
+                  WebAppName: $(webappname)
+                  ResourceGroupName: $(resourceGroupName)
                   SourceSlot: staging
-
+    ```
 3. You can now save the file, and push it to the master branch and wait for the trigger to kick in to deploy it to your dev/test/production web sites
 
-Congratulations! You have completed the creation of a release pipeline with three stages.
+Congratulations! You have completed the creation of a multistage pipeline with four stages.
 
-## Exercise 5: Trigger a build and release
+## Exercise 6: Trigger a build and release
 
 Duration: 10 Minutes
 
@@ -775,7 +915,7 @@ Any commit of new or modified code to the master branch will automatically trigg
 
     ![On the screen, the build has successfully completed. Each task has a green check.](images/stepbystep/media/multistage-7.png "A successful build through all four stages")
 
-## Exercise 6: Set up a Pull Request policy, create a task branch and submit a pull request
+## Exercise 7: Set up a Pull Request policy, create a task branch and submit a pull request
 
 Duration: 30 Minutes
 
