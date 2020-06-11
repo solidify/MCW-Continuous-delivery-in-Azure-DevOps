@@ -37,6 +37,9 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 1: Create a Dockerfile](#Task-1-Create-a-Dockerfile)
   - [Exercise 3: Create Azure DevOps build pipeline](#exercise-3-create-azure-devops-build-pipeline)
     - [Task 1: Create a build pipeline](#task-1-create-a-build-pipeline)
+  - [Exercise 4: Secrets management](#exercise-4-secrets-management)
+    - [Task 1: Create container registry](#task-1-create-container-registry)
+    - [Task 2: Add secrets to pipeline](#task-2-add-secrets-to-pipeline)
   - [Exercise 5: Add release steps to the build pipeline](#exercise-5-add-release-steps-to-the-build-pipeline)
     - [Task 1: Add a service connection to the azure subscription](#task-1-add-a-service-connection-to-the-azure-subscription)
     - [Task 2: Enable admin account on the Azure Container registry](#task-2-enable-admin-account-on-the-azure-container-registry)
@@ -447,6 +450,64 @@ The *pool* section specifies which pool to use for a job of the pipeline. It als
     
     Congratulations! You have just created your first build pipeline. In the next exercise, we will create a release pipeline that deploys your successful builds.
 
+## Exercise 4: Secrets management
+
+Duration 15 min.
+
+When building code it's important to control access to your systems. When adding usernames and passwords we need to secure these.
+
+In azure devops we do this by adding variables to the pipelines and making the secret so that the passwords don't show.
+
+It's important to note that in a production setting we would create separate secrets for each environment and lock down secrets editing. And even better use an azure vault to store our secrets. 
+
+We will need the Container registry later, so we use it as an example to get some secret to store.
+
+### Task 1: Create container registry
+
+1. Goto add container registry
+Go to the azure portal: `portal.azure.com`. On your subscription navigate to 'container registry'. And create a new one. 
+
+  ![Navigate to and create a cotainer registry](images/stepbystep/media/az-portal-create-acr-1.png "Success") 
+
+Click the '+ Add' button to create a new registry.
+
+2. Create container registry
+
+Select your workshop resource group and set the name of the registry. Take note of the name as you will need this later.
+
+  ![Review and create container registry](images/stepbystep/media/az-acr-create-2.png "Success") 
+
+3. Enable admin access
+
+When the ACR is created we need to enable 'Access Keys' to be able to use registry in our workshop.
+
+Go to 'Access Keys' and click 'Enable' under admin user. Then we can use one of the passwords in our pipeline variables.
+
+![Enable admin access](images/stepbystep/media/az-acr-access-keys.png "Success")
+
+
+### Task 2: Add secrets to pipeline
+
+1. Go to your pipeline and edit it.
+step 2 in the image is where three dots will appear and you can choose 'edit'
+
+![Edit your pipeline](images/stepbystep/media/edit_pipeline.png "Success")
+
+2. Click 'Variables' in the top right. Then click the '+' plus to add a new variable.
+
+![Navigate to variables](images/stepbystep/media/click_variables_in_pipeline_edit.png "Success")
+
+3. Add new variable
+
+Set the name of the variable: 'acrContainerRegistryPassword'. We will need this in our pipeline.
+
+Add the acr password you copied rom the azure portal to the 'Value' field. 
+
+Tick the "Keep this value secret" to remove visibility in pipeline runs. This is highly recommended.
+
+![Add new secret variable](images/stepbystep/media/new_variable_in_pipeline.png "Success")
+
+
 ## Exercise 5: Add release steps to the build pipeline
 
 Duration: 45 Minutes
@@ -530,6 +591,8 @@ Before starting on the pipeline we have to first add a service connection we can
 31. Choose the **Verify and save** button to validate the typed in information and create the new connection.
 
 ### Task 2: Enable admin account on the Azure Container registry
+
+>**Note**: We did most of this in Exercise 4. 
 
 1. Azure App service need to be able to pull our container image from the Azure Container registry created earlier, and the one that we are pusing images to in our build definition, and to be able to do that we need to enable Admin access on the registry. Follow the guide listed here by Microsoft https://docs.microsoft.com/en-us/azure/container-registry/container-registry-authentication#admin-account
 
