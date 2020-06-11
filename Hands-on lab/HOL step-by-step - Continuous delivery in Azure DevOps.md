@@ -118,7 +118,7 @@ In this Task, you will the Git repository to your working directory. And push ch
 
     >**Note**: If you are using the Azure Cloud Shell you will be prompted for credentials when using Git. The best way to authenticate is to use a [personal access token](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate), PAT, with a scope Code, Full permissions. Then use that PAT as password (leave user name empty) when prompted.
 
-2. Clone the repo by pasting from your repo "git clone https://SolidifyNorway@dev.azure.com/SolidifyNorway/MCW-DevOps-Workshop/_git/MCW-DevOps-Workshop"
+2. Clone the repo by pasting from your repo `git clone https://SolidifyNorway@dev.azure.com/SolidifyNorway/MCW-DevOps-Workshop/_git/MCW-DevOps-Workshop`
 
 ![Select Clone button on the right and copy the https url](images/stepbystep/media/clone_repo_az_devops.png "Copy https url")
 
