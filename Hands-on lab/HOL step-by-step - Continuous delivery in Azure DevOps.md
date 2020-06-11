@@ -35,14 +35,13 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 2: Clone the Tailspin Toys repository to your local machine or cloud shell](#Task-2-Clone-the-Tailspin-Toys-repository-to-your-local-machine-or-cloud-shell)
   - [Exercise 2: Create Dockerfile](#Exercise-2-Create-Dockerfile)
     - [Task 1: Create a Dockerfile](#Task-1-Create-a-Dockerfile)
-  - [Exercise 3: Create Azure DevOps build pipeline](#exercise-3-create-azure-devops-build-pipeline)
-    - [Task 1: Create a build pipeline](#task-1-create-a-build-pipeline)
-  - [Exercise 4: Secrets management](#exercise-4-secrets-management)
+  - [Exercise 3: Create a Azure Container registry](#exercise-3-create-a-azure-container-registry)
     - [Task 1: Create container registry](#task-1-create-container-registry)
-    - [Task 2: Add secrets to pipeline](#task-2-add-secrets-to-pipeline)
+  - [Exercise 4: Create Azure DevOps build pipeline](#exercise-3-create-azure-devops-build-pipeline)
+    - [Task 1: Create a build pipeline](#task-1-create-a-build-pipeline)
   - [Exercise 5: Add release steps to the build pipeline](#exercise-5-add-release-steps-to-the-build-pipeline)
     - [Task 1: Add a service connection to the azure subscription](#task-1-add-a-service-connection-to-the-azure-subscription)
-    - [Task 2: Enable admin account on the Azure Container registry](#task-2-enable-admin-account-on-the-azure-container-registry)
+    - [Task 2: Add secrets to pipeline](#task-2-add-secrets-to-pipeline)
     - [Task 3: Upgrade the build pipeline to a multistage pipeline and add deployment to dev](#task-3-upgrade-the-build-pipeline-to-a-multistage-pipeline-and-add-deployment-to-dev)
     - [Task 4: Add test and production environments to the pipeline](#task-4-add-test-and-production-environments-to-the-pipeline)
   - [Exercise 6: Trigger a build and release](#exercise-6-trigger-a-build-and-release)
@@ -106,7 +105,7 @@ In this exercise, you will create and configure an Azure DevOps account, an Agil
 
     ![In the TailspinToys project window, Repos is highlighted in the left-hand navigation.](images/stepbystep/media/image58.png "TailspinToys navigation window")
 
-7. On the *Repos* page for the **TailspinToys** repository locate the "Import a repository" section and click the **Import** button. Then insert the url to the base repo in the pane that show up. Then click import. Your repo should now be initiated.
+7. On the *Repos* page for the **TailspinToys** repository locate the "Import a repository" section and click the **Import** button. Then insert this https://SolidifyNorway@dev.azure.com/SolidifyNorway/MCW-DevOps-Workshop/_git/MCW-DevOps-Workshop to the base repo in the pane that show up. Then click import. Your repo should now be initiated.
 
     ![In the "Add some code!" window, URLs appear to clone to your computer or push an existing repository from command line.](images/stepbystep/media/import_repo_az_devops_marked.png "TailspinToys is empty. Add some code!")
 
@@ -118,7 +117,7 @@ In this Task, you will the Git repository to your working directory. And push ch
 
     >**Note**: If you are using the Azure Cloud Shell you will be prompted for credentials when using Git. The best way to authenticate is to use a [personal access token](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate), PAT, with a scope Code, Full permissions. Then use that PAT as password (leave user name empty) when prompted.
 
-2. Clone the repo by pasting from your repo `git clone https://SolidifyNorway@dev.azure.com/SolidifyNorway/MCW-DevOps-Workshop/_git/MCW-DevOps-Workshop`
+2. Clone the repo by pasting from your repo `git clone https://<your-org>@dev.azure.com/<your-org>/<team-project>/_git/<name-of-repo>`
 
 ![Select Clone button on the right and copy the https url](images/stepbystep/media/clone_repo_az_devops.png "Copy https url")
 
@@ -293,208 +292,11 @@ COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "TailspinToysWeb.dll"]
 ```
 
-## Exercise 3: Create Azure DevOps build pipeline
 
-Duration: 15 Minutes
 
-Implementing CI and CD pipelines helps to ensure consistent and quality code that's readily available to users. Azure Pipelines is a quick, easy, and safe way to automate building your projects and making them available to users.
+## Exercise 3: Create a Azure Container registry
 
-In this exercise, you will create a build definition using Azure Pipelines, that will automatically build the web application with every commit of source code. This will lay the groundwork for us to then create a release pipeline for publishing the code to our Azure environments.
-  
-### Task 1: Create a build pipeline
-
-Pipelines are made of one or more stages describing a CI/CD process. Stages are the major divisions in a pipeline: "build this app", "run these tests", and "deploy to pre-production" are good examples of stages.
-
-Stages consist of one or more jobs, which are units of work assignable to a particular machine. Both stages and jobs may be arranged into dependency graphs: "run this stages before that one" or "this job depends on the output of that job".
-
-Jobs consist of a linear series of steps. Steps can be tasks, scripts, or references to external templates.
-
-This hierarchy is reflected in the structure of a YAML file.
-
-1. In your Azure DevOps project, select the **Pipelines** menu option from the left-hand navigation.
-
-    ![In the Azure DevOps window, Pipelines is highlighted in the ribbon.](images/stepbystep/media/image68.png "Azure DevOps window")
-
-2.  Select the **New pipeline** button to create a new build pipeline.
-
-    ![In Builds, New pipeline is highlighted.](images/stepbystep/media/image69.png "Create a new pipeline")
-
-3. This starts a wizard where you'll first need to select where your current code is located. In a previous step, you pushed code up to Azure Repos. Select the **Azure Repos Git** option.
-
-    ![A screen that shows choosing the Azure Repos option for the TailspinToys project.](images/stepbystep/media/image70.png "Where is your code?")
-
-4. Next, you'll need to select the specific repository where your code was pushed. In a previous step, you pushed it to the **TailspinToys** repository. Select the **TailspinToys** git repository.
-
-    ![A screen that shows choosing the TailspinToys repository.](images/stepbystep/media/image71.png "Select a repository")
-
-5. Then, you'll need to select the type of pipeline to configure. Although this pipeline contains a mix of technologies, select **ASP.NET Core** from the list of options.
-
-    ![A screen that shows choosing ASP.NET Core pipeline.](images/stepbystep/media/image72.png "Configure your pipeline")
-
-6. As a final step in the creation of a build pipeline, you are presented with a configured pipeline in the form of an azure-pipelines.yml file. 
-   
-7. This starter YAML file contains a few lines of instructions (shown below) for the pipeline. Let's begin by updating the YAML with more specific instructions to build our application. 
-
-    ![A screen that shows the starter pipeline YAML.](images/stepbystep/media/image72a.png "Review your pipeline YAML")
-
-The *pool* section specifies which pool to use for a job of the pipeline. It also holds information about the job's strategy for running.
-
-8. Select and replace the *pool* section with the following code:
-
-    ```yml
-    pool:
-      vmImage: 'windows-latest'
-      demands:
-      - msbuild
-      - visualstudio
-      - vstest
-    ```
-
-    Steps are a linear sequence of operations that make up a job. Each step runs in its own process on an agent and has access to the pipeline workspace on disk. This means environment variables are not preserved between steps but, file system changes are.
-
-9. Select and replace the *steps* section with the following code:
-    
-    ```yml
-    steps:
-    - task: NuGetToolInstaller@0
-      displayName: 'Use NuGet 4.4.1'
-      inputs:
-        versionSpec: 4.4.1
-        
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '10.x'         
-    ```
-
-    Tasks are the building blocks of a pipeline. They describe the actions that are performed in sequence during an execution of the pipeline.
-
-10. Add additional tasks to your azure-pipelines.yml file by selecting and copying the following code. This should be pasted right after the NuGetToolInstaller@0 task which you pasted previously:
-    
-    >**Note**: The YAML below creates individual tasks for performing all the necessary steps to build and test our application along with publishing the artifacts inside Azure DevOps so they can be retrieved during the upcoming release pipeline process.
-
-    ```yaml
-    - task: NuGetToolInstaller@0
-      displayName: 'Use NuGet 4.4.1'
-      inputs:
-         versionSpec: 4.4.1
-
-    # Node.js tool installer
-    # Finds or downloads and caches the specified version spec of Node.js and adds it to the PATH
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '10.x' 
-
-    - task: NuGetCommand@2
-      displayName: 'NuGet restore'
-      inputs:
-        restoreSolution: 'tailspintoysweb.csproj'
-
-    - task: VSBuild@1
-      displayName: 'Build solution'
-      inputs:
-        solution: 'tailspintoysweb.csproj'
-        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\\"'
-        platform: 'any cpu'
-        configuration: 'release'
-
-    - task: PublishSymbols@2
-      displayName: 'Publish symbols path'
-      inputs:
-        SearchPattern: '**\bin\**\*.pdb'
-        PublishSymbols: false
-      continueOnError: true
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact'
-      inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)'
-        ArtifactName: 'TailspinToys-CI'
-      condition: succeededOrFailed()
-    ```
-
-11. The final result will look like the following:
-
-    ```yml
-    trigger:
-      - master
-
-    pool:
-      vmImage: 'windows-latest'
-      demands:
-      - msbuild
-      - visualstudio
-      - vstest
-
-    variables:
-      buildConfiguration: 'Release'
-
-    steps:
-    - task: NuGetToolInstaller@0
-      displayName: 'Use NuGet 4.4.1'
-      inputs:
-        versionSpec: 4.4.1
-
-    # Node.js tool installer
-    # Finds or downloads and caches the specified version spec of Node.js and adds it to the PATH
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '10.x' 
-
-    - task: NuGetCommand@2
-      displayName: 'NuGet restore'
-      inputs:
-        restoreSolution: 'tailspintoysweb.csproj'
-
-    - task: VSBuild@1
-      displayName: 'Build solution'
-      inputs:
-        solution: 'tailspintoysweb.csproj'
-        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\\"'
-        platform: 'any cpu'
-        configuration: 'release'
-
-    - task: PublishSymbols@2
-      displayName: 'Publish symbols path'
-      inputs:
-        SearchPattern: '**\bin\**\*.pdb'
-        PublishSymbols: false
-      continueOnError: true
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact'
-      inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)'
-        ArtifactName: 'TailspinToys-CI'
-      condition: succeededOrFailed()
-    ```
-
-12. Choose the **Save and run** button to save our new pipeline and also kick off the first build.
-
-    ![A screen that shows the contents of azure-pipelines.yml. The Save and run button is highlighted.](images/stepbystep/media/image73.png "azure-pipelines.yml")    
-
-13. The new *azure-pipelines.yml* file will automatically be added to the root of your TailspinToys repository. This is done through a git commit that Azure DevOps facilitates. You are then asked to enter a commit description. By default, it will be populated for you. Once again, select the **Save and run** button at the bottom of the screen.
-
-    ![A screen that shows the commit of azure-pipelines.yml. The Save and run button is highlighted.](images/stepbystep/media/image74.png "Save and run")   
-
-14. The build process will immediately begin and run through the steps defined in the azure-pipelines.yml file. Your Azure DevOps screen will refresh to show you the build process executing, in real-time. 
-
-    ![A screen that shows the real-time output of the build process.](images/stepbystep/media/image76.png "Real-time output")   
-
-15. After the build process completes, you should see a green check mark next to each of the build pipeline steps.
-  
-    ![A screen that shows a successfully completed build pipeline.](images/stepbystep/media/image77.png "Success") 
-    
-    Congratulations! You have just created your first build pipeline. In the next exercise, we will create a release pipeline that deploys your successful builds.
-
-## Exercise 4: Secrets management
-
-Duration 15 min.
-
-When building code it's important to control access to your systems. When adding usernames and passwords we need to secure these.
-
-In azure devops we do this by adding variables to the pipelines and making the secret so that the passwords don't show.
-
-It's important to note that in a production setting we would create separate secrets for each environment and lock down secrets editing. And even better use an azure vault to store our secrets. 
+Duration 10 min. 
 
 We will need the Container registry later, so we use it as an example to get some secret to store.
 
@@ -522,26 +324,149 @@ Go to 'Access Keys' and click 'Enable' under admin user. Then we can use one of 
 ![Enable admin access](images/stepbystep/media/az-acr-access-keys.png "Success")
 
 
-### Task 2: Add secrets to pipeline
+## Exercise 4: Create Azure DevOps build pipeline
 
-1. Go to your pipeline and edit it.
-step 2 in the image is where three dots will appear and you can choose 'edit'
+Duration: 15 Minutes
 
-![Edit your pipeline](images/stepbystep/media/edit_pipeline.png "Success")
+Implementing CI and CD pipelines helps to ensure consistent and quality code that's readily available to users. Azure Pipelines is a quick, easy, and safe way to automate building your projects and making them available to users.
 
-2. Click 'Variables' in the top right. Then click the '+' plus to add a new variable.
+In this exercise, you will create a build definition using Azure Pipelines, that will automatically build the web application with every commit of source code. This will lay the groundwork for us to then create a release pipeline for publishing the code to our Azure environments.
+  
+### Task 1: Create a build pipeline
 
-![Navigate to variables](images/stepbystep/media/click_variables_in_pipeline_edit.png "Success")
+Pipelines are made of one or more stages describing a CI/CD process. Stages are the major divisions in a pipeline: "build this app", "run these tests", and "deploy to pre-production" are good examples of stages.
 
-3. Add new variable
+Stages consist of one or more jobs, which are units of work assignable to a particular machine. Both stages and jobs may be arranged into dependency graphs: "run this stages before that one" or "this job depends on the output of that job".
 
-Set the name of the variable: 'acrContainerRegistryPassword'. We will need this in our pipeline.
+Jobs consist of a linear series of steps. Steps can be tasks, scripts, or references to external templates.
 
-Add the acr password you copied rom the azure portal to the 'Value' field. 
+This hierarchy is reflected in the structure of a YAML file.
 
-Tick the "Keep this value secret" to remove visibility in pipeline runs. This is highly recommended.
+1. Since we are building a docker image, we need to create a Azure Container Registry in the Azure portal, and add a service connection to that registry inside of your Azure Devops team project.
+    ![A screen that shows settings you need.](images/stepbystep/media/Multistage-1.png "Settings")
+    ![A screen that shows the connection type you need.](images/stepbystep/media/BuildDef-CreateAzc-Connection.png "Service Connection")
+    ![A screen that shows subscription selection and name.](images/stepbystep/media/BuildDef-CreateAzc-Connection-name.png "Save connection")
 
-![Add new secret variable](images/stepbystep/media/new_variable_in_pipeline.png "Success")
+2. In your Azure DevOps project, select the **Pipelines** menu option from the left-hand navigation.
+
+    ![In the Azure DevOps window, Pipelines is highlighted in the ribbon.](images/stepbystep/media/image68.png "Azure DevOps window")
+
+3.  Select the **New pipeline** button to create a new build pipeline.
+
+    ![In Builds, New pipeline is highlighted.](images/stepbystep/media/image69.png "Create a new pipeline")
+
+4. This starts a wizard where you'll first need to select where your current code is located. In a previous step, you pushed code up to Azure Repos. Select the **Azure Repos Git** option.
+
+    ![A screen that shows choosing the Azure Repos option for the TailspinToys project.](images/stepbystep/media/image70.png "Where is your code?")
+
+5. Next, you'll need to select the specific repository where your code was pushed. In a previous step, you pushed it to the **TailspinToys** repository. Select the **TailspinToys** git repository.
+
+    ![A screen that shows choosing the TailspinToys repository.](images/stepbystep/media/image71.png "Select a repository")
+
+6. Then, you'll need to select the type of pipeline to configure. Although this pipeline contains a mix of technologies, select **ASP.NET Core** from the list of options.
+
+    ![A screen that shows choosing ASP.NET Core pipeline.](images/stepbystep/media/image72.png "Configure your pipeline")
+
+7. As a final step in the creation of a build pipeline, you are presented with a configured pipeline in the form of an azure-pipelines.yml file. 
+   
+8. This starter YAML file contains a few lines of instructions (shown below) for the pipeline. Let's begin by updating the YAML with more specific instructions to build our application. 
+
+    ![A screen that shows the starter pipeline YAML.](images/stepbystep/media/image72a.png "Review your pipeline YAML")
+
+The *pool* section specifies which pool to use for a job of the pipeline. It also holds information about the job's strategy for running.
+
+9. Select and replace the *pool* section with the following code:
+
+    ```yml
+    pool:
+      vmImage: 'ubuntu-latest'
+    ```
+
+    Steps are a linear sequence of operations that make up a job. Each step runs in its own process on an agent and has access to the pipeline workspace on disk. This means environment variables are not preserved between steps but, file system changes are.
+
+9. There is also a notion of variables you can reuse in different places in the build pipeline. So add a section that contains these variables
+
+    ```yml
+    variables:
+      dockerRegistry: <the name of a Azure Container Registry service connection>
+      imageRepository: tailspintoys/web
+    ```
+  
+
+10. Select and replace the *steps* section with the following code:
+    
+    ```yml
+    steps:
+    - task: Docker@2
+      displayName: Login to ACR
+      inputs:
+        command: login
+        containerRegistry: $(dockerRegistry)
+
+    - task: Docker@2
+      displayName: Build and Push
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        tags: |
+            $(Build.BuildId)
+
+    - publish: $(System.DefaultWorkingDirectory)/armtemplate
+      artifact: armtemplate       
+    ```
+
+    Tasks are the building blocks of a pipeline. They describe the actions that are performed in sequence during an execution of the pipeline. The steps here are logging into the container registry, then builds and pushes that image to the registry. The final publish is to make the arm template available for the next stages we are going to create for deploying the full solution.
+
+11. The final result will look like the following:
+
+    ```yml
+    trigger:
+      - master
+
+    pool:
+      vmImage: 'ubuntu-latest'
+      
+    variables:
+      dockerRegistry: mcwworkshopimages
+      imageRepository: tailspintoys/web
+
+    steps:
+    - task: Docker@2
+      displayName: Login to ACR
+      inputs:
+        command: login
+        containerRegistry: $(dockerRegistry)
+
+    - task: Docker@2
+      displayName: Build and Push
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        tags: |
+            $(Build.BuildId)
+
+    - publish: $(System.DefaultWorkingDirectory)/armtemplate
+      artifact: armtemplate
+    ```
+
+12. Choose the **Save and run** button to save our new pipeline and also kick off the first build.
+
+    ![A screen that shows the contents of azure-pipelines.yml. The Save and run button is highlighted.](images/stepbystep/media/image73.png "azure-pipelines.yml")    
+
+13. The new *azure-pipelines.yml* file will automatically be added to the root of your TailspinToys repository. This is done through a git commit that Azure DevOps facilitates. You are then asked to enter a commit description. By default, it will be populated for you. Once again, select the **Save and run** button at the bottom of the screen.
+
+    ![A screen that shows the commit of azure-pipelines.yml. The Save and run button is highlighted.](images/stepbystep/media/image74.png "Save and run")   
+
+14. The build process will immediately begin and run through the steps defined in the azure-pipelines.yml file. Your Azure DevOps screen will refresh to show you the build process executing, in real-time. 
+
+    ![A screen that shows the real-time output of the build process.](images/stepbystep/media/image76.png "Real-time output")   
+
+15. After the build process completes, you should see a green check mark next to each of the build pipeline steps.
+  
+    ![A screen that shows a successfully completed build pipeline.](images/stepbystep/media/image77.png "Success") 
+    
+    Congratulations! You have just created your first build pipeline. In the next exercise, we will create a release pipeline that deploys your successful builds.
+
 
 
 ## Exercise 5: Add release steps to the build pipeline
@@ -626,13 +551,33 @@ Before starting on the pipeline we have to first add a service connection we can
 
 31. Choose the **Verify and save** button to validate the typed in information and create the new connection.
 
-### Task 2: Enable admin account on the Azure Container registry
+### Task 2: Add secrets to pipeline
+When building code it's important to control access to your systems. When adding usernames and passwords we need to secure these.
 
->**Note**: We did most of this in Exercise 4. 
+In azure devops we do this by adding variables to the pipelines and making the secret so that the passwords don't show.
 
-1. Azure App service need to be able to pull our container image from the Azure Container registry created earlier, and the one that we are pusing images to in our build definition, and to be able to do that we need to enable Admin access on the registry. Follow the guide listed here by Microsoft https://docs.microsoft.com/en-us/azure/container-registry/container-registry-authentication#admin-account
+It's important to note that in a production setting we would create separate secrets for each environment and lock down secrets editing. And even better use an azure vault to store our secrets.
 
-2. Create a secret variable in the build definition where you copy in the password for the container registry and add the username(the same value as the name of the registry) into a variable in the yaml file for the builddefiniton
+1. Go to your pipeline and edit it.
+step 2 in the image is where three dots will appear and you can choose 'edit'
+
+![Edit your pipeline](images/stepbystep/media/edit_pipeline.png "Success")
+
+2. Click 'Variables' in the top right. Then click the '+' plus to add a new variable.
+
+![Navigate to variables](images/stepbystep/media/click_variables_in_pipeline_edit.png "Success")
+
+3. Add new variable
+
+Set the name of the variable: 'acrContainerRegistryPassword'. We will need this in our pipeline.
+
+Add the acr password you copied rom the azure portal to the 'Value' field. 
+
+Tick the "Keep this value secret" to remove visibility in pipeline runs. This is highly recommended.
+
+![Add new secret variable](images/stepbystep/media/new_variable_in_pipeline.png "Success")
+
+4. Add a second variable that will hold our database password, also as a secret. Name it secretPasswordVariable and put in a strong password, you dont need to remember it for later.
 
 ### Task 3: Upgrade the build pipeline to a multistage pipeline and add deployment to dev
 
