@@ -1,16 +1,8 @@
 ![Microsoft Cloud Workshops](https://github.com/Microsoft/MCW-Template-Cloud-Workshop/raw/master/Media/ms-cloud-workshop.png "Microsoft Cloud Workshops")
 
-<div class="MCWHeader1">
-Continuous delivery in Azure DevOps
-</div>
+Continuous delivery of containers with Github
 
-<div class="MCWHeader2">
 Hands-on lab step-by-step
-</div>
-
-<div class="MCWHeader3">
-June 2020
-</div>
 
 Information in this document, including URL and other Internet Web site references, is subject to change without notice. Unless otherwise noted, the example companies, organizations, products, domain names, e-mail addresses, logos, people, places, and events depicted herein are fictitious, and no association with any real company, organization, product, domain name, e-mail address, logo, person, place or event is intended or should be inferred. Complying with all applicable copyright laws is the responsibility of the user. Without limiting the rights under copyright, no part of this document may be reproduced, stored in or introduced into a retrieval system, or transmitted in any form or by any means (electronic, mechanical, photocopying, recording, or otherwise), or for any purpose, without the express written permission of Microsoft Corporation.
 
@@ -30,9 +22,8 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
   - [Overview](#overview)
   - [Solution architecture](#solution-architecture)
   - [Requirements](#requirements)
-  - [Exercise 1: Create Azure DevOps project and Git Repository](#exercise-1-create-azure-devops-project-and-git-repository)
-    - [Task 1: Create Azure DevOps Account](#task-1-create-azure-devops-account)
-    - [Task 2: Clone the Tailspin Toys repository to your local machine or cloud shell](#Task-2-Clone-the-Tailspin-Toys-repository-to-your-local-machine-or-cloud-shell)
+  - [Exercise 1: Fork a repository in Github](#exercise-1-fork-a-repository-in-github)
+    - [Task 1: Fork a Github repo](#task-1-fork-a-github-repo)
   - [Exercise 2: Create Dockerfile](#Exercise-2-Create-Dockerfile)
     - [Task 1: Create a Dockerfile](#Task-1-Create-a-Dockerfile)
   - [Exercise 3: Create a Azure Container registry](#exercise-3-create-a-azure-container-registry)
@@ -75,108 +66,49 @@ Tailspin Toys has asked you to automate their development process in two specifi
 
 ## Requirements
 
-1.  Microsoft Azure subscription
+1.  Github account
+2.  Microsoft Azure subscription
 
-  >**Note**: This entire lab can be completed using only the Azure Portal.
+## Exercise 1: Fork a repository in Github
 
-## Exercise 1: Create Azure DevOps project and Git Repository
+Duration: 10 Minutes
 
-Duration: 15 Minutes
+In this exercise, you will fork a git repository in Github.
+We assume you have a working github account.
 
-In this exercise, you will create and configure an Azure DevOps account, an Agile project, and clone the base repo for this workshop.
+You should learn to fork and some best practices about forking.
 
-### Task 1: Create Azure DevOps Account
-
-1. Browse to the Azure DevOps site at <https://dev.azure.com>.
-
-2. If you do not already have an account, select the **Start free** button.
-    
-    ![In this screenshot, a Start free button is shown on the Azure DevOps home page.](images/stepbystep/media/image56.png "Azure DevOps screenshot")
-
-3. Authenticate with a Microsoft account.
-
-4. Choose **Continue** to accept the Terms of Service, Privacy Statement, and Code of Conduct.
-
-5. Choose a name for new your project. For the purposes of this scenario, we will use *TailspinToys*. Choose **Private** in the Visibility section so that our project is only visible to those who we specifically grant access. Then, select **+ Create project**.
-    
-    ![In the Create a project to get started window, TailspinToys is highlighted in the Project name box, Private is highlighted in the Visibility box, and Create project is highlighted at the bottom.](images/stepbystep/media/image57.png "Create a project window")
-
-6. Once the Project is created, choose the **Repos** menu option in the left-hand navigation.
-
-    ![In the TailspinToys project window, Repos is highlighted in the left-hand navigation.](images/stepbystep/media/image58.png "TailspinToys navigation window")
-
-7. On the *Repos* page for the **TailspinToys** repository locate the "Import a repository" section and click the **Import** button. Then insert this https://SolidifyNorway@dev.azure.com/SolidifyNorway/MCW-DevOps-Workshop/_git/MCW-DevOps-Workshop to the base repo in the pane that show up. Then click import. Your repo should now be initiated.
-
-    ![In the "Add some code!" window, URLs appear to clone to your computer or push an existing repository from command line.](images/stepbystep/media/import_repo_az_devops_marked.png "TailspinToys is empty. Add some code!")
-
-### Task 2: Clone the Tailspin Toys repository to your local machine or cloud shell
+### Task 1: Fork a Github repo
 
 In this Task, you will the Git repository to your working directory. And push changes to Azure DevOps through the command line tools.
 
-1.  Open a **Git command prompt** or the **Azure Cloud Shell**. 
+1. Login to your Github account -> https://github.com/login
 
-    >**Note**: If you are using the Azure Cloud Shell you will be prompted for credentials when using Git. The best way to authenticate is to use a [personal access token](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate), PAT, with a scope Code, Full permissions. Then use that PAT as password (leave user name empty) when prompted.
+2. Navigate to the repo you want to fork -> https://github.com/solidify/MCW-DevOps-Workshop
 
-2. Clone the repo by pasting from your repo `git clone https://<your-org>@dev.azure.com/<your-org>/<team-project>/_git/<name-of-repo>`
+3. Initiate a fork, clock the fork icon towards the top right corner.
+![Fork a repository on Github](images/stepbystep/media/github_fork.png "Github Fork")
 
-![Select Clone button on the right and copy the https url](images/stepbystep/media/clone_repo_az_devops.png "Copy https url")
+4. Choose your account as the target for the fork:
+Note that you can only fork a repository once into your account.
 
-3. In case the *Password for 'https://\<your-org>@dev.azure.com':* prompt appears, follow the next steps to generate a PAT (Personal Access Token) for your Azure DevOps organization. Otherwise, skip to step 11.
-    
-    > **Note**: These steps are also useful when using a multi-factored protected user account with Azure DevOps.
-    
-    > **Note**: **DO NOT CLOSE AZURE CLOUD SHELL**. Use a different tab for the steps for creating a new PAT token.
+![Choose account to fork to](images/stepbystep/media/github_fork_choose_account.png "Choose account to fork to")
 
-4. In *Azure DevOps*, choose on the second to last icon on the top menu in the left-hand side of the screen, representing a user and a small gear icon.
+5. Forking best practices.
+It's common to leave the main/master branch as a true copy of the forked repo. And use another branch for your local changes. 
 
-5. From the context menu, choose **Personal access tokens**.
+6. Clone, commit, and Push to your fork
 
-    ![Selecting the player settings icon in the top menu bar](images/stepbystep/media/image132.png "Personal access tokens menu option")
+Clone the repository on your local machine `git clone https://github.com/solidify/MCW-DevOps-Workshop.git` (optionally choose the ssh link)
 
-6. If the *Create a new personal access token* dialog has appeared, skip to the next step. Otherwise, select the **+ New Token** button.
+Create a file called `README.md`
 
-    ![Forcing the 'Create a new personal access token' to appear](images/stepbystep/media/image133.png "Personal access tokens menu option")
+Add it to the repo: `git add README.md`
 
-7. In the *Create a new personal access token* dialog, type in a descriptive name for the new token, and from the *Code* section, choose **Full** and **Status**.
+Commit it `git commit -m "Added Readme.md"` 
 
-    ![Creating a new PAT (Personal Access Token) in Azure Devops](images/stepbystep/media/image134.png "Personal access tokens menu option")
+Then push it `git push`
 
-8. In the *Create a new personal access token* dialog, select the **Create** button.
-
-9. From the success confirmation dialog, select the **Copy to clipboard** button to copy the newly created PAT token to clipboard.
-
-    ![Copying the newly created PAT token to the clipboard](images/stepbystep/media/image135.png "Success confirmation page")
-
-10. In *Azure Cloud Shell*, paste the PAT token and press **Enter**.
-
-11. Open Code to this folder by typing: 
-   
-   ```bash
-   code .
-   ``` 
-
-   Then press **Enter**. 
-   
-   >**Note**: Be sure to include the period after the code command as this instructs Code to open the current directory context.
-
-12. Make a change to the Readme file. Create 'README.md' file. Then add some text to the file. 
-
-13. Type in the following commands to commit the changes made locally to the new repository:
-    
-    ```bash
-    git add *
-    git commit -m "adding REAMDE.md"
-    ```
-
-14. Push the changes up to the Azure DevOps repository with the following command:
-
-    ```
-    git push
-    ```
-
-15. Leave that command prompt window open and switch back to the web browser window for Azure DevOps from the previous Task. Navigate to the Repos > Files page which shows the files in the repository. You may need to refresh the page to see the updated files. Your source code is now appearing in Azure DevOps.
-
-    ![The newly created files show up in Repos > Files section.](images/stepbystep/media/clean_repo.png "Success confirmation page")
 
 ## Exercise 2: Create Dockerfile
 
