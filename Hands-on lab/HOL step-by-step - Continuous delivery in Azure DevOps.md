@@ -230,7 +230,11 @@ ENTRYPOINT ["dotnet", "TailspinToysWeb.dll"]
 
 Duration 20 min. 
 
-We will need the Azure Container registry later, so we use it as an example to get some secret to store.
+We will need the Azure Container registry later, so we use it as an example to get some secret to store. When building code it's important to control access to your systems. When adding usernames and passwords we need to secure these.
+
+In GitHub we do this by adding Secrets to our repository, there is also an option to store this on the organization level and give access to the secret inside the different repos
+
+It's important to note that in a production setting we would create separate secrets for each environment and lock down secrets editing. And even better use an azure vault to store our secrets.
 
 ### Task 1: Create container registry
 
@@ -405,467 +409,199 @@ This hierarchy is reflected in the structure of a YAML file. The workflows needs
     Congratulations! You have just created your first workflow. In the next exercise, we will create a release pipeline that deploys your successful builds.
 
 
-## Exercise 5: Add release steps to the build pipeline
+## Exercise 5: Add release steps to the workflow
 
-Duration: 45 Minutes
+Duration: 20 Minutes
 
-In this exercise, you will make changes to the build pipeline, so that it becomes a multistage pipeline. This means that the pipeline containes stages for performing automated deployments of build artifacts to Microsoft Azure. The multistage pipeline will first build the artifact and then deploy to three stages: dev, test, and production.
+In this exercise, you will make changes to the workflow, so that we run a deployment to multiple environments. This means that the workflow containes jobs for performing automated deployments of build artifacts to Microsoft Azure. The workflow will have 4 different jobs that first builds the artifacts and then deploys to three stages: dev, test, and production.
 
-### Task 1: Add a service connection to the azure subscription
-Before starting on the pipeline we have to first add a service connection we can use in the pipeline to target and authenticate to the correct Microsoft Azure Subscription.
+### Task 1: Add deployment to dev in the workflow
 
-1. Start by going to settings and add a new Azure Resource Manager and go through the wizard there.
-    
-   ![A screen that shows settings you need.](images/stepbystep/media/Multistage-1.png "Settings")
-   ![A screen that shows what type of Service connection.](images/stepbystep/media/Multistage-2.png "Connction type")
-   ![A screen that shows the usertype we want to use and what to use if this failes.](images/stepbystep/media/Multistage-3.png "Type of authentication")
-   ![A screen that shows the the dialog where we select subscription and log in.](images/stepbystep/media/Multistage-4.png "Selection of subscription")
-
-2. In case a 'Service connection operation failed' dialog pops up, follow the next steps to manually create a service principal to use in this wizard. You would also like to follow these steps in case you want to granularly configure permissions for Azure DevOps to a single resource group rather than the entire subscription.
-
-    **If you successfully authorized the Azure Subsription you may skip to the next task**
-
-    > **Note**: The following workaround steps must be performed by a Global Administrator of the tenant associated to the Azure subscription, or at least an individual who has access to a user account with either of these Azure Active Directory roles: Application administrator, Application developer, Cloud application administrator.
-        
-3. In the Azure Portal, open the **Azure Active Directory** page.
-
-4. In the *Azure Active Directory* page, choose **App registrations**.
-
-5. In the *App registrations* page, choose **+ New registration**.
-
-6. In the *Register an application*, type in a name for the application (e.g. **MCWAzureDevOps**).
-
-7. For *Supported account types*, choose *Accounts in this organizational directory only*.
-
-8. Select the **Register** button.
-
-9. In the application page, note down the **Application (client) ID** - this will be used at a later step in this task and will be referred to as *Application ID*.
-
-10. In the application page, note down the **Directory (tenant) ID** - this will be used at a later step in this task and will be referred to as *Directory ID*.
-
-11. Choose **Certificates & secrets*.
-
-12. In the *Certificates & secrets* page, select **+ New client secret**.
-
-13. In the *Add a client secret* dialog, type in a descriptive description and choose **Never** for the expiration of the secret.
-
-14. Select **Add**.
-
-15. Copy the value of the secret now. This will not be displayed later and will be used at a later step in this task. The secret will be referred to as *Client secret*.
-
-16. In the Azure Portal, open the **TailspinToysRg** resource group.
-
-17. On the left-side of the page, choose **Access control (IAM)**.
-
-18. On the top-menu, choose **+ Add**.
-
-19. From the drop-down menu, choose **Add role assignment**.
-
-20. In the **Add role assignment**, type in the following information:
-
-    - For *Role*, choose **Contributor**
-    - For *Select*, type in the name of the application you previously registered (e.g. *MCWAzureDevOps*)
-
-    ![In the Azure Portal at the Access control (IAM) page, for configuring RBAC permissions for the newly created application registration](images/stepbystep/media/image141.png "Access control (IAM)")
-
-29. Select the application returned from the query, and choose **Save**. 
-
-30. Go back to Azure DevOps and start adding a new service connection, but this time select Service principal(manual)
-    - For *Connection name*, type in a descriptive name which represents the connection your establishing between your Azure DevOps organization and Azure.
-    - For *Environment*, choose **AzureCloud**.
-    - For *Scope level*, choose **Subscription**.
-    - For *Subscription ID*, type in your Azure subscription identifier where the resources were previously created. You may retrieve this information from running the following Azure CLI command in the Azure Cloud Shell editor previously used for provisioning and copying the value of the *id* property:
-
+1. First we are going to add a new job for deployment to dev. The **needs** setting indicates that this job has to run after the build stage is completed
+    ```yml
+    deploy-dev:
+        runs-on: ubuntu-latest
+        needs: build
     ```
-    az account show
-    ```
-
-    - For *Subscription name*, type in the exact name of the Azure subscription. Again, this information can be retrieved by using the same Azure CLI command previously described
-    - For *Service pricipal client ID*, *Service principal key* and *Tenant ID*, type in the **Client ID**, **Client secret** and **Directory ID** values copied previously.
-
-    ![The Add an Azure Resource Manager service connection dialog](images/stepbystep/media/Multistage-5.png "ARM connection dialog")
-
-31. Choose the **Verify and save** button to validate the typed in information and create the new connection.
-
-### Task 2: Add secrets to pipeline
-When building code it's important to control access to your systems. When adding usernames and passwords we need to secure these.
-
-In azure devops we do this by adding variables to the pipelines and making the secret so that the passwords don't show.
-
-It's important to note that in a production setting we would create separate secrets for each environment and lock down secrets editing. And even better use an azure vault to store our secrets.
-
-1. Go to your pipeline and edit it.
-step 2 in the image is where three dots will appear and you can choose 'edit'
-
-![Edit your pipeline](images/stepbystep/media/edit_pipeline.png "Success")
-
-2. Click 'Variables' in the top right. Then click the '+' plus to add a new variable.
-
-![Navigate to variables](images/stepbystep/media/click_variables_in_pipeline_edit.png "Success")
-
-3. Add new variable
-
-Set the name of the variable: 'acrContainerRegistryPassword'. We will need this in our pipeline.
-
-Add the acr password you copied rom the azure portal to the 'Value' field. 
-
-Tick the "Keep this value secret" to remove visibility in pipeline runs. This is highly recommended.
-
-![Add new secret variable](images/stepbystep/media/new_variable_in_pipeline.png "Success")
-
-4. Add a second variable that will hold our database password, also as a secret. Name it secretPasswordVariable and put in a strong password, you dont need to remember it for later.
-
-### Task 3: Upgrade the build pipeline to a multistage pipeline and add deployment to dev
-
-1. First we need to add the correct keywords to our current build definition so that we can add more stages. Either open the azure-pipelines.yml file in Visual Studio code, or on the web and make sure the pipeline looks like this
+2. The setup looks the same structure, and we can download all the code if we want, but there is a action for downloading the artifact that we published in the build job. In a normal workflow, this is the preferred way of structuring the deployment. If the git repository is quite big, checking out the code might be a slow process. This workflow does not have that much artifact since we are publishing the image in the build job, but there are ways to structure this that the build job runs for all branches, but we only run a publish job if we are on master branch.  
 
     ```yml
-    trigger:
-      - master
-
-    stages:
-    - stage: 'Build'
-      displayName: 'Build the web application'
-      jobs: 
-      - job: 'Build'
-        displayName: 'Build job'
-        pool:
-          vmImage: 'ubuntu-latest'
-
-        steps:
-        - task: Docker@2
-          displayName: Login to ACR
-          inputs:
-            command: login
-            containerRegistry: $(dockerRegistry)
-        # rest of file is not shown, but all existing tasks needs to be here
-    ```
-2. Next we are going to add a stage for deployment to dev. The **dependsOn** setting indicates that this stage has to run after the Build stage is completed
-    ```yml
-    - stage: 'DeployDev'
-      displayName: 'Deploy the web application to Dev'
-      dependsOn: Build
-    ```
-3. We will use a job type called deployment that downloads all existing artifacts from this pipeline and we can select what environment we want to update. The environment a collection of resources that can be targeted during deployement, as well as being the place where we can add approval gates and other gates.
-
-    ```yml
-    - stage: 'DeployDev'
-      displayName: 'Deploy the web application to Dev'
-      dependsOn: Build
-      jobs:
-      - deployment: Deploy
-        pool:
-          vmImage: 'ubuntu-latest'
-        environment: dev
+    steps:
+      - name: Download armtemplate
+        uses: actions/download-artifact@v2
+        with:
+          name: armtemplate
     ```
 
-4. The next part is selecting what kind of strategy we want to use in our rollout phase, and if there are any predeploy or postdeploy steps we would like to do. Currently our setup is simple, so only a single deployment that creates the infrastructure and deployes a fixed set of resources
+4. The next part is login into Azure using the secret we created in Exercise 3.
     ```yml
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: AzureResourceGroupDeployment@2
-            displayName: 'Deploy template'
-            inputs:
-              deploymentScope: 'Resource Group'
-              ConnectedServiceName: $(azureSubscription)
-              subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
-              action: 'Create Or Update Resource Group'
-              resourceGroupName: $(resourceGroupName)
-              location: 'West Europe'
-              templateLocation: 'Linked artifact'
-              csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
-              overrideParameters: -environment dev -administratorLogin databaseAdminUser -administratorLoginPassword $(secretPasswordVariable)
-              deploymentOutputs: ArmOutputs
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     ```
-This uses the arm template we pushed as artifacts in the buildpipeline to provision our dev website and the dev database. Important parts here is using the service connection created in the previouse step as the connected service name and using the secret password variable from the builddefinition itself.
-
-5. If you are using the web editor you can either add task where the cursor is, or edit a existing one by pressing settings
-   
-   ![Screen showing the web editor](images/stepbystep/media/Multistage-6.png "Azure DevOps Pipeline web editor")
-
-6. Our ARM template contains an output variable of out new website and we now need to parse that output of the webappname so we can use that to target our deployment in azure
+5. After that we can run az commands in our workflow. We will now add a **run:** action that contains inline scripts. We are targeting powershell core with the setting **shell: pwsh**. We are using the arm template we pushed as artifacts in the build job to provision our dev website and the dev database. We are using powershell for getting the output variable, since our ARM template contains an output variable of new website name and we now need to parse that output of the webappname so we can use that to target our deployment in Azure
     ```yml
-    - pwsh: |
-        $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
-        $webAppName = $armOutputObj.webappname.value
-        Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
-      displayName: "Parsing outputs from ARM deployment to pipeline variables"
+    - name: Deploy ARM template
+      run: |
+        $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=dev --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
+        $armOutputObj = $output | ConvertFrom-Json
+        $webAppName = $armOutputObj.properties.outputs.webappname.value
+        echo "::set-env name=webAppName::$webAppName"
+      shell: pwsh
     ```
-7. Now we are using Azure CLI to actually deploy our containerimage into our Azure App Service. We are using Azure CLI to showcase here that we can do that from the pipeline, and the fact that the AzureAppService deployement task does not work with Azure Container registry, only with Docker Hub. We also deploy to a staging slog and then swap to production slot after the deployment is done and the website is ready to take traffic.
+
+6. Now we are using Azure CLI to actually deploy our containerimage into our Azure App Service. We are using Azure CLI to deploy our container into Azure AppService for Containers. We also deploy to a staging slot and then swap to production slot after the deployment is done and the website is ready to take traffic.
     ```yml
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: $(azureSubscription)
-        scriptType: 'pscore'
-        scriptLocation: 'inlineScript'
+    - name: Deploy webapp to staging slot
+      uses: azure/CLI@v1
+      with:
         inlineScript: |
-          az --version
-          az account show
-          az webapp config container set `
-                    --resource-group $(resourceGroupName) `
-                    --name $(webappname) `
-                    --docker-custom-image-name $(imageName) `
-                    --docker-registry-server-password $(acrContainerRegistryPassword) `
-                    --docker-registry-server-url https://<registryName>.azurecr.io `
-                    --docker-registry-server-user <registryName> `
-                    --slot staging
+          az webapp config container set \
+                      --resource-group ${{ env.resourcegroup }} \
+                      --name ${{ env.webAppName }} \
+                      --docker-custom-image-name ${{ env.imagename }}:${{ github.sha }} \
+                      --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }} \
+                      --docker-registry-server-url https://${{ env.containerregistry }} \
+                      --docker-registry-server-user ${{ env.registryusername }} \
+                      --slot staging
 
-    - task: AzureAppServiceManage@0
-      displayName: 'Swap Slots: $(resourceGroupName)'
-      inputs:
-        azureSubscription: '$(azureSubscription)'
-        WebAppName: $(webappname)
-        ResourceGroupName: $(resourceGroupName)
-        SourceSlot: staging
+    - name: Swap slots for webapp
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          az webapp deployment slot swap -g ${{ env.resourcegroup }} -n ${{ env.webAppName }} --slot staging --target-slot production
     ```
 
 6. The final result will look like the following:
 
     ```yml
-    - stage: 'DeployDev'
-      displayName: 'Deploy the web application to Dev'
-      dependsOn: Build
-      jobs:
-      - deployment: Deploy
-        pool:
-          vmImage: 'ubuntu-latest'
-        environment: dev
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-              - task: AzureResourceGroupDeployment@2
-                displayName: 'Deploy template'
-                inputs:
-                  deploymentScope: 'Resource Group'
-                  ConnectedServiceName: $(azureSubscription)
-                  subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
-                  action: 'Create Or Update Resource Group'
-                  resourceGroupName: $(resourceGroupName)
-                  location: 'West Europe'
-                  templateLocation: 'Linked artifact'
-                  csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
-                  overrideParameters: -environment dev -administratorLogin JallaJalla -administratorLoginPassword $(dbPassword)
-                  deploymentOutputs: ArmOutputs
-              
-              - pwsh: |
-                  $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
-                  $webAppName = $armOutputObj.webappname.value
-                  Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
-                displayName: "Parsing outputs from ARM deployment to pipeline variables"
-              
-              - task: AzureCLI@2
-                inputs:
-                  azureSubscription: $(azureSubscription)
-                  scriptType: 'pscore'
-                  scriptLocation: 'inlineScript'
-                  inlineScript: |
-                    az --version
-                    az account show
-                    az webapp config container set `
-                              --resource-group $(resourceGroupName) `
-                              --name $(webappname) `
-                              --docker-custom-image-name $(imageName) `
-                              --docker-registry-server-password $(acrContainerRegistryPassword) `
-                              --docker-registry-server-url https://<registryName>.azurecr.io `
-                              --docker-registry-server-user <registryName> `
-                              --slot staging
+    deploy-dev:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - name: Download armtemplate
+          uses: actions/download-artifact@v2
+          with:
+            name: armtemplate
 
-              - task: AzureAppServiceManage@0
-                displayName: 'Swap Slots: $(resourceGroupName)'
-                inputs:
-                  azureSubscription: '$(azureSubscription)'
-                  WebAppName: $(webappname)
-                  ResourceGroupName: $(resourceGroupName)
-                  SourceSlot: staging
-              
+        - name: Login to Azure
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        - name: Deploy ARM template
+          run: |
+            $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=dev --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
+            $armOutputObj = $output | ConvertFrom-Json
+            $webAppName = $armOutputObj.properties.outputs.webappname.value
+            echo "::set-env name=webAppName::$webAppName"
+          shell: pwsh
+
+        - name: Deploy webapp to staging slot
+          uses: azure/CLI@v1
+          with:
+            inlineScript: |
+              az webapp config container set \
+                          --resource-group ${{ env.resourcegroup }} \
+                          --name ${{ env.webAppName }} \
+                          --docker-custom-image-name ${{ env.imagename }}:${{ github.sha }} \
+                          --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }} \
+                          --docker-registry-server-url https://${{ env.containerregistry }} \
+                          --docker-registry-server-user ${{ env.registryusername }} \
+                          --slot staging
+
+        - name: Swap slots for webapp
+          uses: azure/CLI@v1
+          with:
+            inlineScript: |
+              az webapp deployment slot swap -g ${{ env.resourcegroup }} -n ${{ env.webAppName }} --slot staging --target-slot production
     ```
 
 7. Congratulations! You can now save the file, and push it to the master branch and wait for the trigger to kick in to deploy it to your dev web site
 
-### Task 4: Add test and production environments to the pipeline
+### Task 2: Add test and production environments to the workflow
 
-1. Now open the azure-pipelines.yml file once more and copy/paste the DeployDev stage twice, one for test and one for production. You need to update the **dependsOn** tag to match the correct previous stage and the name of the environment to the current stage. Also the name of the webapp will now contain test and production instead of dev.
+1. Now open the main.yml file once more and copy/paste the deploy-dev job twice, one for test and one for production. You need to update the **needs** tag to match the correct previous job and the name of the environment to the current target. Also the name of the webapp will now contain test and production instead of dev.
 
-2. All the release stages in the pipeline will now look like this
+2. The new release jobs in the workflow will now look like this
     
     ```yml
-    - stage: 'DeployDev'
-      displayName: 'Deploy the web application to Dev'
-      dependsOn: Build
-      jobs:
-      - deployment: Deploy
-        pool:
-          vmImage: 'ubuntu-latest'
-        environment: dev
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-              - task: AzureResourceGroupDeployment@2
-                displayName: 'Deploy template'
-                inputs:
-                  deploymentScope: 'Resource Group'
-                  ConnectedServiceName: $(azureSubscription)
-                  subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
-                  action: 'Create Or Update Resource Group'
-                  resourceGroupName: $(resourceGroupName)
-                  location: 'West Europe'
-                  templateLocation: 'Linked artifact'
-                  csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
-                  overrideParameters: -environment dev -administratorLogin JallaJalla -administratorLoginPassword $(dbPassword)
-                  deploymentOutputs: ArmOutputs
-              
-              - pwsh: |
-                  $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
-                  $webAppName = $armOutputObj.webappname.value
-                  Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
-                displayName: "Parsing outputs from ARM deployment to pipeline variables"
-              
-              - task: AzureCLI@2
-                inputs:
-                  azureSubscription: $(azureSubscription)
-                  scriptType: 'pscore'
-                  scriptLocation: 'inlineScript'
-                  inlineScript: |
-                    az --version
-                    az account show
-                    az webapp config container set `
-                              --resource-group $(resourceGroupName) `
-                              --name $(webappname) `
-                              --docker-custom-image-name $(imageName) `
-                              --docker-registry-server-password $(acrContainerRegistryPassword) `
-                              --docker-registry-server-url https://<registryName>.azurecr.io `
-                              --docker-registry-server-user <registryName> `
-                              --slot staging
-
-              - task: AzureAppServiceManage@0
-                displayName: 'Swap Slots: $(resourceGroupName)'
-                inputs:
-                  azureSubscription: '$(azureSubscription)'
-                  WebAppName: $(webappname)
-                  ResourceGroupName: $(resourceGroupName)
-                  SourceSlot: staging
     
-    - stage: 'DeployTest'
-      displayName: 'Deploy the web application to Test'
-      dependsOn: DeployDev
-      jobs:
-      - deployment: Deploy
-        pool:
-          vmImage: 'ubuntu-latest'
-        environment: test
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-              - task: AzureResourceGroupDeployment@2
-                displayName: 'Deploy template'
-                inputs:
-                  deploymentScope: 'Resource Group'
-                  ConnectedServiceName: $(azureSubscription)
-                  subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
-                  action: 'Create Or Update Resource Group'
-                  resourceGroupName: $(resourceGroupName)
-                  location: 'West Europe'
-                  templateLocation: 'Linked artifact'
-                  csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
-                  overrideParameters: -environment test -administratorLogin JallaJalla -administratorLoginPassword $(dbPassword)
-                  deploymentOutputs: ArmOutputs
-              
-              - pwsh: |
-                  $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
-                  $webAppName = $armOutputObj.webappname.value
-                  Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
-                displayName: "Parsing outputs from ARM deployment to pipeline variables"
-              
-              - task: AzureCLI@2
-                inputs:
-                  azureSubscription: $(azureSubscription)
-                  scriptType: 'pscore'
-                  scriptLocation: 'inlineScript'
-                  inlineScript: |
-                    az --version
-                    az account show
-                    az webapp config container set `
-                              --resource-group $(resourceGroupName) `
-                              --name $(webappname) `
-                              --docker-custom-image-name $(imageName) `
-                              --docker-registry-server-password $(acrContainerRegistryPassword) `
-                              --docker-registry-server-url https://<registryName>.azurecr.io `
-                              --docker-registry-server-user <registryName> `
-                              --slot staging
+    deploy-test:
+      runs-on: ubuntu-latest
+      needs: deploy-dev
+      steps:
+        - name: Download armtemplate
+          uses: actions/download-artifact@v2
+          with:
+            name: armtemplate
 
-              - task: AzureAppServiceManage@0
-                displayName: 'Swap Slots: $(resourceGroupName)'
-                inputs:
-                  azureSubscription: '$(azureSubscription)'
-                  WebAppName: $(webappname)
-                  ResourceGroupName: $(resourceGroupName)
-                  SourceSlot: staging
+        - name: Login to Azure
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - stage: 'DeployProduction'
-      displayName: 'Deploy the web application to Production'
-      dependsOn: DeployTest
-      jobs:
-      - deployment: Deploy
-        pool:
-          vmImage: 'ubuntu-latest'
-        environment: production
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-              - task: AzureResourceGroupDeployment@2
-                displayName: 'Deploy template'
-                inputs:
-                  deploymentScope: 'Resource Group'
-                  ConnectedServiceName: $(azureSubscription)
-                  subscriptionName: '6549e907-7551-49a6-a486-bc5f11d74660'
-                  action: 'Create Or Update Resource Group'
-                  resourceGroupName: $(resourceGroupName)
-                  location: 'West Europe'
-                  templateLocation: 'Linked artifact'
-                  csmFile: '$(Pipeline.Workspace)/armtemplate/azuredeploy.json'
-                  overrideParameters: -environment production -administratorLogin JallaJalla -administratorLoginPassword $(dbPassword)
-                  deploymentOutputs: ArmOutputs
-              
-              - pwsh: |
-                  $armOutputObj = '$(ArmOutputs)' | ConvertFrom-Json
-                  $webAppName = $armOutputObj.webappname.value
-                  Write-Host "##vso[task.setvariable variable=webappname]$webAppName"
-                displayName: "Parsing outputs from ARM deployment to pipeline variables"
-              
-              - task: AzureCLI@2
-                inputs:
-                  azureSubscription: $(azureSubscription)
-                  scriptType: 'pscore'
-                  scriptLocation: 'inlineScript'
-                  inlineScript: |
-                    az --version
-                    az account show
-                    az webapp config container set `
-                              --resource-group $(resourceGroupName) `
-                              --name $(webappname) `
-                              --docker-custom-image-name $(imageName) `
-                              --docker-registry-server-password $(acrContainerRegistryPassword) `
-                              --docker-registry-server-url https://<registryName>.azurecr.io `
-                              --docker-registry-server-user <registryName> `
-                              --slot staging
+        - run: |
+            $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=test --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
+            $armOutputObj = $output | ConvertFrom-Json
+            $webAppName = $armOutputObj.properties.outputs.webappname.value
+            az webapp config container set `
+                          --resource-group ${{ env.resourcegroup }} `
+                          --name $webappname `
+                          --docker-custom-image-name ${{ env.imagename }}:${{ github.sha }} `
+                          --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }} `
+                          --docker-registry-server-url https://${{ env.containerregistry }} `
+                          --docker-registry-server-user ${{ env.registryusername }} `
+                          --slot staging
+            echo "::set-env name=webAppName::$webAppName"
+          shell: pwsh
 
-              - task: AzureAppServiceManage@0
-                displayName: 'Swap Slots: $(resourceGroupName)'
-                inputs:
-                  azureSubscription: '$(azureSubscription)'
-                  WebAppName: $(webappname)
-                  ResourceGroupName: $(resourceGroupName)
-                  SourceSlot: staging
+        - name: Swap slots for webapp
+          uses: azure/CLI@v1
+          with:
+            inlineScript: |
+              az webapp deployment slot swap -g ${{ env.resourcegroup }} -n ${{ env.webAppName }} --slot staging --target-slot production
+    
+    deploy-prod:
+      runs-on: ubuntu-latest
+      needs: deploy-test
+      steps:
+        - name: Download armtemplate
+          uses: actions/download-artifact@v2
+          with:
+            name: armtemplate
+
+        - name: Login to Azure
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        - run: |
+            $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=production --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
+            $armOutputObj = $output | ConvertFrom-Json
+            $webAppName = $armOutputObj.properties.outputs.webappname.value
+            az webapp config container set `
+                          --resource-group ${{ env.resourcegroup }} `
+                          --name $webappname `
+                          --docker-custom-image-name ${{ env.imagename }}:${{ github.sha }} `
+                          --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }} `
+                          --docker-registry-server-url https://${{ env.containerregistry }} `
+                          --docker-registry-server-user ${{ env.registryusername }} `
+                          --slot staging
+            echo "::set-env name=webAppName::$webAppName"
+          shell: pwsh
+
+        - name: Swap slots for webapp
+          uses: azure/CLI@v1
+          with:
+            inlineScript: |
+              az webapp deployment slot swap -g ${{ env.resourcegroup }} -n ${{ env.webAppName }} --slot staging --target-slot production      
     ```
 3. You can now save the file, and push it to the master branch and wait for the trigger to kick in to deploy it to your dev/test/production web sites
 
-Congratulations! You have completed the creation of a multistage pipeline with four stages.
+Congratulations! You have completed the creation of a workflow that builds and pushes the website to three different environments.
+![A screen that shows a successfully completed build pipeline.](images/stepbystep/media/gh-create-workflow-7.png "Success") 
 
 ## Exercise 6: Set up a Pull Request policy, create a task branch and submit a pull request
 
