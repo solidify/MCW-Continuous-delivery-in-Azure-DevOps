@@ -35,9 +35,7 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 2: Add secrets to pipeline](#task-2-add-secrets-to-pipeline)
     - [Task 3: Upgrade the build pipeline to a multistage pipeline and add deployment to dev](#task-3-upgrade-the-build-pipeline-to-a-multistage-pipeline-and-add-deployment-to-dev)
     - [Task 4: Add test and production environments to the pipeline](#task-4-add-test-and-production-environments-to-the-pipeline)
-  - [Exercise 6: Trigger a build and release](#exercise-6-trigger-a-build-and-release)
-    - [Task 1: Manually queue a new build and follow it through the release pipeline](#task-1-manually-queue-a-new-build-and-follow-it-through-the-release-pipeline)
-  - [Exercise 7: Set up a Pull Request policy, create a task branch and submit a pull request](#exercise-7-set-up-a-pull-request-policy-create-a-task-branch-and-submit-a-pull-request)
+  - [Exercise 6: Set up a Pull Request policy, create a task branch and submit a pull request](#exercise-6-set-up-a-pull-request-policy-create-a-task-branch-and-submit-a-pull-request)
     - [Task 1: Set up a Pull Request policy](#task-1-set-up-a-pull-request-policy)
     - [Task 2: Create a new branch](#task-2-create-a-new-branch)
     - [Task 3: Make a code change to the task branch](#task-3-make-a-code-change-to-the-task-branch)
@@ -863,35 +861,7 @@ This uses the arm template we pushed as artifacts in the buildpipeline to provis
 
 Congratulations! You have completed the creation of a multistage pipeline with four stages.
 
-## Exercise 6: Trigger a build and release
-
-Duration: 10 Minutes
-
-In this exercise, you will trigger an automated build and release of the web application using the build and release pipelines you created in earlier exercises. The release pipeline will deploy to three stages: dev, test, and production.
-
-Any commit of new or modified code to the master branch will automatically trigger a build. The steps below are useful when you want to manually trigger a build without a code change.
-
-### Task 1: Manually queue a new build and follow it through the release pipeline
-
-1. Select the *Pipelines* menu item from the left-hand navigation. 
-
-2. In the *Pipelines* view, choose the *TailspinToys* pipeline recently created.
-
-3. In the *TailspinToys* pipeline runs page, choose the *Run pipeline* button in the upper right section of the page.
-
-    ![On the screen, the Pipelines button and the Queue button are highlighted.](images/stepbystep/media/image102.png "Queue a new build")
-
-4. This will present a modal window titled *Run pipeline*. Choose the **Run** button at the bottom of the modal window.
-
-    ![On the popup, the Queue button is highlighted.](images/stepbystep/media/image103.png "Queue button")
-
-5. The screen will refresh and begin to show details about the build process.
-
-6. When the build stage finished and because we configured continuous deployment, the deployment to the dev stage will automatically be triggered. It will continue through on to the test and production stages. A successful build through all four stages will look like the screen shot below.Once the build completes, it will resemble the snippet below.
-
-    ![On the screen, the build has successfully completed. Each task has a green check.](images/stepbystep/media/multistage-7.png "A successful build through all four stages")
-
-## Exercise 7: Set up a Pull Request policy, create a task branch and submit a pull request
+## Exercise 6: Set up a Pull Request policy, create a task branch and submit a pull request
 
 Duration: 30 Minutes
 
