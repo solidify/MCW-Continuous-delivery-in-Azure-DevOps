@@ -26,8 +26,10 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 1: Fork a Github repo](#task-1-fork-a-github-repo)
   - [Exercise 2: Create Dockerfile](#Exercise-2-Create-Dockerfile)
     - [Task 1: Create a Dockerfile](#Task-1-Create-a-Dockerfile)
-  - [Exercise 3: Create a Azure Container registry](#exercise-3-create-a-azure-container-registry)
+  - [Exercise 3: Setup up shared infrastructure and secrets we will use](#exercise-3-setup-up-shared-infrastructure-and-secrets-we-will-use)
     - [Task 1: Create container registry](#task-1-create-container-registry)
+    - [Task 2: Create a service account to be able to log on azure cli in our pipeline](#task-2-create-a-service-account-to-be-able-to-log-on-azure-cli-in-our-pipeline)
+    - [Task 3: Add a DBPASSWORD secret](#task-3-add-a-dbpassword-secret)
   - [Exercise 4: Create Azure DevOps build pipeline](#exercise-3-create-azure-devops-build-pipeline)
     - [Task 1: Create a build pipeline](#task-1-create-a-build-pipeline)
   - [Exercise 5: Add release steps to the build pipeline](#exercise-5-add-release-steps-to-the-build-pipeline)
@@ -224,11 +226,11 @@ ENTRYPOINT ["dotnet", "TailspinToysWeb.dll"]
 
 
 
-## Exercise 3: Create a Azure Container registry
+## Exercise 3: Setup up shared infrastructure and secrets we will use
 
-Duration 10 min. 
+Duration 20 min. 
 
-We will need the Container registry later, so we use it as an example to get some secret to store.
+We will need the Azure Container registry later, so we use it as an example to get some secret to store.
 
 ### Task 1: Create container registry
 
@@ -249,154 +251,158 @@ Select your workshop resource group and set the name of the registry. Take note 
 
 When the ACR is created we need to enable 'Access Keys' to be able to use registry in our workshop.
 
-Go to 'Access Keys' and click 'Enable' under admin user. Then we can use one of the passwords in our pipeline variables.
+Go to 'Access Keys' and click 'Enable' under admin user. Then we can use one of the passwords in our secret variables, also remember what the username is, we will also have to add that to the workflow variables
 
 ![Enable admin access](images/stepbystep/media/az-acr-access-keys.png "Success")
 
+4. Create secret in GitHub
 
-## Exercise 4: Create Azure DevOps build pipeline
+After enabling admin user, go to settings under your fork to create a secret
+![Add secret 1](images/stepbystep/media/gh-add-secret-1.png "Add secret under settings")
+![Add secret 2](images/stepbystep/media/gh-add-secret-2.png "Copy password from portal")
+
+### Task 2: Create a service account to be able to log on azure cli in our pipeline
+
+We will need a service principal to use when running the deployment scripts in GitHub Actions. By running this command you will get a json output which you can add as secrets inside of settings. Follow the same procedure as previous step to create a AZURE_CREDENTIALS for the json that is output'et.
+  ```yml
+   az login
+   #verify that the selected azure subscription is correct
+   az ad sp create-for-rbac --name "mcwworkshop" --role contributor --sdk-auth
+  ```                   
+  ![Sample SPN creating](images/stepbystep/media/gh-add-sp.png "Sample log")
+
+### Task 3: Add a DBPASSWORD secret
+
+1. Add a new secret called DBPASSWORD that contains a relativ hard password for the database. One uppercase letter, and one specialchar and minimum 8 chars. We will use this when running an ARM template to provision all resources needed for this website.
+
+## Exercise 4: Create GitHub Action workflow
 
 Duration: 15 Minutes
 
-Implementing CI and CD pipelines helps to ensure consistent and quality code that's readily available to users. Azure Pipelines is a quick, easy, and safe way to automate building your projects and making them available to users.
+Implementing CI and CD pipelines helps to ensure consistent and quality code that's readily available to users. GitHub Action workflows is a quick, easy, and safe way to automate building your projects and making them available to users.
 
-In this exercise, you will create a build definition using Azure Pipelines, that will automatically build the web application with every commit of source code. This will lay the groundwork for us to then create a release pipeline for publishing the code to our Azure environments.
+In this exercise, you will create a build definition in GitHub Actions, that will automatically build the web application with every commit of source code. This will lay the groundwork for us to then create a release pipeline for publishing the code to our Azure environments.
   
-### Task 1: Create a build pipeline
+### Task 1: Create a workflow
 
-Pipelines are made of one or more stages describing a CI/CD process. Stages are the major divisions in a pipeline: "build this app", "run these tests", and "deploy to pre-production" are good examples of stages.
+Workflows are made of one or more jobs describing a CI/CD process. Jobs are the major divisions in a workflow: "build this app", "run these tests", and "deploy to pre-production" are good examples of jobs.
 
-Stages consist of one or more jobs, which are units of work assignable to a particular machine. Both stages and jobs may be arranged into dependency graphs: "run this stages before that one" or "this job depends on the output of that job".
+Workflows consist of one or more jobs, which are units of work assignable to a particular machine. GitHub Actions can contain multiple workflows that trigger on different rules. That means that you can logically split workflows depending on what you want to do.
 
-Jobs consist of a linear series of steps. Steps can be tasks, scripts, or references to external templates.
+Jobs consist of a linear series of steps. Steps can be built-in actions, scripts, third-party actions or references actions in the same repo.
 
-This hierarchy is reflected in the structure of a YAML file.
+This hierarchy is reflected in the structure of a YAML file. The workflows needs to follow different sets of rules. First of it needs to be in a folder named .github/workflows and have a file ending on either .yml or .yaml, and it needs to be syntactic correct
 
-1. Since we are building a docker image, we need to create a Azure Container Registry in the Azure portal, and add a service connection to that registry inside of your Azure Devops team project.
-    ![A screen that shows settings you need.](images/stepbystep/media/Multistage-1.png "Settings")
-    ![A screen that shows the connection type you need.](images/stepbystep/media/BuildDef-CreateAzc-Connection.png "Service Connection")
-    ![A screen that shows subscription selection and name.](images/stepbystep/media/BuildDef-CreateAzc-Connection-name.png "Save connection")
+1. In your fork project, select the **Actions** menu option from the banner navigation inside your repo. Select the **New workflow** button to create a new workflow.
 
-2. In your Azure DevOps project, select the **Pipelines** menu option from the left-hand navigation.
+    ![Selecting Actions inside your repo](images/stepbystep/media/gh-create-workflow-1.png "GitHub Actions")
 
-    ![In the Azure DevOps window, Pipelines is highlighted in the ribbon.](images/stepbystep/media/image68.png "Azure DevOps window")
+2. Then, you'll need to select the type of workflow to configure. Since this repository contains a mix of technologies and we want to use Docker Build, select **set up this workflow yourself** from the wizard that comes up.
 
-3.  Select the **New pipeline** button to create a new build pipeline.
+    ![A screen that shows choosing set up this workflow yourself.](images/stepbystep/media/gh-create-workflow-2.png "Configure your workflow")
 
-    ![In Builds, New pipeline is highlighted.](images/stepbystep/media/image69.png "Create a new pipeline")
+3. As a final step in the creation of a workflow, you are presented with a configured workflow in the form of an .github/workflow/main.yml file. 
+   This starter YAML file contains a few lines of instructions (shown below) for the pipeline. Let's begin by updating the YAML with more specific instructions to build our application. 
 
-4. This starts a wizard where you'll first need to select where your current code is located. In a previous step, you pushed code up to Azure Repos. Select the **Azure Repos Git** option.
+    ![A screen that shows the starter pipeline YAML.](images/stepbystep/media/gh-create-workflow-3.png "Review your pipeline YAML")
 
-    ![A screen that shows choosing the Azure Repos option for the TailspinToys project.](images/stepbystep/media/image70.png "Where is your code?")
 
-5. Next, you'll need to select the specific repository where your code was pushed. In a previous step, you pushed it to the **TailspinToys** repository. Select the **TailspinToys** git repository.
-
-    ![A screen that shows choosing the TailspinToys repository.](images/stepbystep/media/image71.png "Select a repository")
-
-6. Then, you'll need to select the type of pipeline to configure. Although this pipeline contains a mix of technologies, select **ASP.NET Core** from the list of options.
-
-    ![A screen that shows choosing ASP.NET Core pipeline.](images/stepbystep/media/image72.png "Configure your pipeline")
-
-7. As a final step in the creation of a build pipeline, you are presented with a configured pipeline in the form of an azure-pipelines.yml file. 
-   
-8. This starter YAML file contains a few lines of instructions (shown below) for the pipeline. Let's begin by updating the YAML with more specific instructions to build our application. 
-
-    ![A screen that shows the starter pipeline YAML.](images/stepbystep/media/image72a.png "Review your pipeline YAML")
-
-The *pool* section specifies which pool to use for a job of the pipeline. It also holds information about the job's strategy for running.
-
-9. Select and replace the *pool* section with the following code:
+4. There is a notion of variables you can reuse in different places in the workflow. They are added as environment variables. So add a section that contains these variables
 
     ```yml
-    pool:
-      vmImage: 'ubuntu-latest'
+    env:
+      resourcegroup: <name of the resourcegroup you want to create in this workshop>
+      containerregistry: <the name of a Azure Container Registry *.azurecr.io>
+      registryusername: <the admin username for Azure Container Registry>
+      imagename: <the name of a Azure Container Registry *.azurecr.io>/tailspintoys/web
     ```
 
-    Steps are a linear sequence of operations that make up a job. Each step runs in its own process on an agent and has access to the pipeline workspace on disk. This means environment variables are not preserved between steps but, file system changes are.
-
-9. There is also a notion of variables you can reuse in different places in the build pipeline. So add a section that contains these variables
-
-    ```yml
-    variables:
-      dockerRegistry: <the name of a Azure Container Registry service connection>
-      imageRepository: tailspintoys/web
-    ```
-  
-
-10. Select and replace the *steps* section with the following code:
+10. Steps are a linear sequence of operations that make up a job. Each step runs in its own process on an agent and has access to the workflow workspace on disk. Select and replace the *steps* section with the following code:
     
     ```yml
     steps:
-    - task: Docker@2
-      displayName: Login to ACR
-      inputs:
-        command: login
-        containerRegistry: $(dockerRegistry)
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
 
-    - task: Docker@2
-      displayName: Build and Push
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        tags: |
-            $(Build.BuildId)
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.containerregistry }}
+          username: ${{ env.registryusername }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - publish: $(System.DefaultWorkingDirectory)/armtemplate
-      artifact: armtemplate       
+      - run: |
+          docker build . -t ${{ env.imagename }}:${{ github.sha }}
+          docker push ${{ env.imagename }}:${{ github.sha }}
+
+      - name: Upload arm templates to workflow
+        uses: actions/upload-artifact@v2
+        with:
+          name: armtemplate
+          path: ${{ github.workspace }}/armtemplate/
     ```
 
-    Tasks are the building blocks of a pipeline. They describe the actions that are performed in sequence during an execution of the pipeline. The steps here are logging into the container registry, then builds and pushes that image to the registry. The final publish is to make the arm template available for the next stages we are going to create for deploying the full solution.
+    Steps are the building blocks of a workflow. They describe the actions that are performed in sequence during an execution of the job. The steps here are first checking out the code, then logging into the container registry and then builds and pushes that image to the registry. The final publish is to make the arm template available for the next job we are going to create for deploying the full solution.
 
 11. The final result will look like the following:
 
     ```yml
-    trigger:
-      - master
+    name: CI/CD of containers with GitHub Actions
 
-    pool:
-      vmImage: 'ubuntu-latest'
+    # Controls when the action will run. Triggers the workflow on push or pull request
+    # events but only for the master branch
+    on:
+      push:
+        branches: [master]
+      pull_request:
+        branches: [master]
+
+    env:
+      resourcegroup: mcwworkshoprg
+      containerregistry: mcwworkshop.azurecr.io
+      registryusername: mcwworkshop
+      imagename: mcwworkshop.azurecr.io/tailspintoys/web
       
-    variables:
-      dockerRegistry: mcwworkshopimages
-      imageRepository: tailspintoys/web
+    # A workflow run is made up of one or more jobs that can run sequentially or in parallel
+    jobs:
+      build:
+        # The type of runner that the job will run on
+        runs-on: ubuntu-latest
 
-    steps:
-    - task: Docker@2
-      displayName: Login to ACR
-      inputs:
-        command: login
-        containerRegistry: $(dockerRegistry)
+        # Steps represent a sequence of tasks that will be executed as part of the job
+        steps:
+          # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+          - uses: actions/checkout@v2
 
-    - task: Docker@2
-      displayName: Build and Push
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        tags: |
-            $(Build.BuildId)
+          - uses: azure/docker-login@v1
+            with:
+              login-server: ${{ env.containerregistry }}
+              username: ${{ env.registryusername }}
+              password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - publish: $(System.DefaultWorkingDirectory)/armtemplate
-      artifact: armtemplate
+          - run: |
+              docker build . -t ${{ env.imagename }}:${{ github.sha }}
+              docker push ${{ env.imagename }}:${{ github.sha }}
+
+          - name: Upload arm templates to workflow
+            uses: actions/upload-artifact@v2
+            with:
+              name: armtemplate
+              path: ${{ github.workspace }}/armtemplate/
     ```
 
-12. Choose the **Save and run** button to save our new pipeline and also kick off the first build.
+12. Choose the **Start commit** button to save our new workflow on the master branch, this will also kick off the first build. The new *main.yml* file will automatically be added to the .github/workflows/ folder of your TailspinToys repository. This is done through a git commit that GitHub facilitates. You are then asked to enter a commit description. By default, it will be populated for you. Once again, select the **Commit new file** button at the bottom of the screen.
 
-    ![A screen that shows the contents of azure-pipelines.yml. The Save and run button is highlighted.](images/stepbystep/media/image73.png "azure-pipelines.yml")    
+    ![A screen that shows the contents of main.yml. The Start commit button is highlighted.](images/stepbystep/media/gh-create-workflow-4.png "main.yml")    
 
-13. The new *azure-pipelines.yml* file will automatically be added to the root of your TailspinToys repository. This is done through a git commit that Azure DevOps facilitates. You are then asked to enter a commit description. By default, it will be populated for you. Once again, select the **Save and run** button at the bottom of the screen.
+14. The build process will immediately begin and run through the steps defined in the main.yml file. You have to go back to the **Actions** tab to follow the build.
 
-    ![A screen that shows the commit of azure-pipelines.yml. The Save and run button is highlighted.](images/stepbystep/media/image74.png "Save and run")   
-
-14. The build process will immediately begin and run through the steps defined in the azure-pipelines.yml file. Your Azure DevOps screen will refresh to show you the build process executing, in real-time. 
-
-    ![A screen that shows the real-time output of the build process.](images/stepbystep/media/image76.png "Real-time output")   
+    ![A screen that shows the real-time output of the build process.](images/stepbystep/media/gh-create-workflow-5.png "Real-time output")   
 
 15. After the build process completes, you should see a green check mark next to each of the build pipeline steps.
   
-    ![A screen that shows a successfully completed build pipeline.](images/stepbystep/media/image77.png "Success") 
+    ![A screen that shows a successfully completed build pipeline.](images/stepbystep/media/gh-create-workflow-6.png "Success") 
     
-    Congratulations! You have just created your first build pipeline. In the next exercise, we will create a release pipeline that deploys your successful builds.
-
+    Congratulations! You have just created your first workflow. In the next exercise, we will create a release pipeline that deploys your successful builds.
 
 
 ## Exercise 5: Add release steps to the build pipeline
