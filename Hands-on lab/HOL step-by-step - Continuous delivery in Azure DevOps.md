@@ -900,156 +900,57 @@ You'll then merge the pull request into the master branch which triggers an auto
 
 In the tasks below, you will make changes directly through the Azure DevOps web interface. These steps could also be performed locally through an IDE of your choosing or using the command line.
 
-### Task 1: Add new file
+### Task 1: Commit new file with a Pull request
 
-1. Select the branch you want to 
+1. Select the branch you want to change or add content to.
+
 ![](images/stepbystep/media/github_select_branch.png)
 
-2. Choose add new file to the repo.
+
+2. Choose 'add file' to add a file to the repo.
 
 ![](images/stepbystep/media/github_add_file.png)
 
 3. Edit the file and choose new branch
+
+Choose name and content for the file.
+
 ![](images/stepbystep/media/github_new_file_content.png)
+
+Then create a commit heading, and describe the change in the commit.
+Make sure to select "new branch" when you create files in a repo with multiple contributors.
+
 ![](images/stepbystep/media/github_commit_new_file.png)
 
+Now the file should be added to a new branch. 
 
-4. Then create a pull request
 
-Navigate to the pullrequests
+4. Create a pull request
 
-compare & pullrequest 
+Navigate to 'Pull requests'.
+The click "compare & pull request"
 ![](images/stepbystep/media/github_compare_and_pull_request.png)
 
 
+Then choose the correct repositofy and branch you want to push to.
+
 ![](images/stepbystep/media/github_select_your_branch_for_pr.png)
 
-![](images/stepbystep/media/github_pr_selct_base_and_optional.png)
+Add apropriate description, reviewers, and labels to the pull request.
 
-5. Merge the pullrequest
+![](images/stepbystep/media/github_pr_select_base_and_optional.png)
+
+Then click create.
+
+5. Merge the pull request
+Now you can see the created pull request. 
+If everything is good, then you can merge it.
 ![](images/stepbystep/media/github_pr_merge.png)
 
 
-### Task 1: Set up a Pull Request policy
+### Task 2: 
+Create branch merge rules.  TODO
 
-1.  Select the "Repos" menu item from the left-hand navigation. Then, choose "Branches".
-
-Start creating by doing the steps 1-3 in the screenshot below
-
-![](images/stepbystep/media/PR-1.png)
-
-2.  Then enable the policy by checking 1 and 2 in screenshot below, and then click 3 to enable a build to run when the PR is created.  Inside that dialog, choose the correct build definition in 4, then set a nice name in 5.
-
-The first check enables the build policy to require a work item to be included with the PR.  It may be added with one of the commits, or added directly to the PR.
-
-(Notice: If you *do* enable this, which is the recommended setup, then you also must add a workitem in your process below with the code changes. Ignore this for the workshop if you dont want to do that.)
-
-The second check is to ensure that if anyone comments on this PR during the peer review phase, then those comments have to be resolved.
-
-![](images/stepbystep/media/PR-2.png)
-
-3.  Save everything
-
-### Task 2: Create a new branch
-
-1. Select the **Repos** menu item from the left-hand navigation. Then, choose **Branches**.
-
-    ![On the screen, Repos and Branches are highlighted.](images/stepbystep/media/image106.png "Azure DevOps window")
-
-2. Select the *New branch* button in the upper right corner of the page.
-
-    ![On the screen, New branch is highlighted.](images/stepbystep/media/image106a.png "Azure DevOps window")
-
-3. In the *Create a branch* dialog, enter a name for the new branch (e.g. **new-heading**). In the *Based on* field, be sure **master** is selected.
-
-    ![On the popup window, Name and Based on are highlighted along with the Create branch button.](images/stepbystep/media/image107.png "Create a branch popup")
-
-4. Select the **Create** button.
-
-### Task 3: Make a code change to the task branch
-
-1.  Choose the name of the newly created branch. This will present the *Files* window showing all the files in the repository.
-
-    ![On the screen, the new-heading branch is highlighted.](images/stepbystep/media/image108.png "Branches window")
-
-2. Next, you'll make a change to a page in the web application inside the web browser.
-   
-    Select the **ClientApp** folder.
-
-4. Then choose the **src** folder.
-
-5. Next select the **app** folder.
-
-6. Then, the **home** folder.
-
-7. Locate and select the **home.component.html** file. It will display the contents of the file.
-
-8. Select the **Edit** button on the top right of the screen to begin editing the page.
-
-    ![On the screen, Edit is highlighted.](images/stepbystep/media/image109.png "Files window")
-
-9. Replace the code ```<h1>Welcome to Tailspin Toys v1!</h1>``` on *line 1* with the following:
-
-    ```
-    <h1>Welcome to Tailspin Toys v2!</h1>
-    ```
-    
-10. Now that you've completed the code change, select the **Commit** button on the top right side of the screen.
-
-    ![On the screen, line 6 code change and the Commit button are highlighted.](images/stepbystep/media/image110.png "Completing the code change")
-
-11. This will present the Commit dialog where you can enter a comment; one will automatically be filled in for you. Select the **Commit** button.
-
-    ![On the popup, the Commit button is highlighted.](images/stepbystep/media/image111.png "Commit dialog popup")
-
-### Task 4: Submit a pull request
-
-1. Near the top of the screen, locate the **Create a pull request** button.
-
-    ![On the screen, Create a pull request is highlighted.](images/stepbystep/media/image112.png "Create a pull request")
-
-2. This brings up the *New Pull Request* page. It shows we are submitting a request to merge code from our **new-heading** branch into the **master** branch. You have the option to change the *Title* and *Description* fields. 
-    
-    Locate the **Reviewers** field. 
-    
-    Type in **Tailspin** and select the search tooltip. 
-    
-    Select the **[TailspinToys]\TailspinToys Team** from the search results. This assigns The TailspinToys Team (which you are a member of) to review this pull request before it will be merged. The details of the code change are at the bottom of the page.
-
-    ![On the screen, Reviewers is highlighted.](images/stepbystep/media/image113.png "New Pull Request page")
-
-3. Select the **Create** button to submit the pull request.
-
-### Task 5: Approve and complete a pull request
-
-Typically, the next few steps would be performed by another team member. This would allow for the code to be peer reviewed. However, in this scenario, you will continue as if you are the only developer on the project.
-
-1.  After submitting the pull request, you are presented with Pull Request review screen. Let's assume all the changes made were acceptable to the review team.
-Confirm that the build is green, it is shown on the same page. 
-
-Note that if the build is not green, you can not merge the Pull Request as in step 2-4 below. You are then blocked.
-
-2. First, select the **Approve** button to approve of the code that was modified submitted as part of the pull request.
-
-3. This will note that you approved the pull request. Then, choose the **Complete** button to finish and merge the code from the pull request into the master branch.
-
-    ![On the screen, Approve and Complete are highlighted.](images/stepbystep/media/image114.png "Approve and complete to merge the pull request")
-
-4.  After choosing the Complete button in the previous step, you will be presented with the Complete pull request popup. You can add additional comments for the merge activity. By selecting the *Delete new-heading after merging* option, our branch will be deleted after the merge has been completed. This keeps our repository clean of old and abandoned branches and eliminates the possibility of future confusion.
-
-    ![In the Complete pull request dialog box, Delete new-heading after merging is selected and highlighted, and Complete merge is highlighted at the bottom.](images/stepbystep/media/image115.png "Complete pull request dialog box")
-
-5.  Select the **Complete merge** button.
-
-6.  You will then see a confirmation of the completed pull request.
-
-    ![On the popup, Complete merge is highlighted.](images/stepbystep/media/image116.png "Complete pull request popup")
-
-7.  Congratulations! You just created a branch, made a code change, submitted a pull request, approved the pull request, and merged the code.
-
-8.  Because we configured continuous integration and continuous deployment, an automated build will be triggered and deployment to dev stage will then begin immediately after a successful build. It will continue through on to the test and production stages.
-
-    ![On the screen, a new build has been automatically triggered.](images/stepbystep/media/image117.png "List of builds")
 
 ## After the hands-on lab
 
