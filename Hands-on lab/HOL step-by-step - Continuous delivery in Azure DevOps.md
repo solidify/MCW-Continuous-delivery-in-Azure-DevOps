@@ -949,7 +949,22 @@ If everything is good, then you can merge it.
 
 
 ### Task 2: 
-Create branch merge rules.  TODO
+
+Here you can add rules to your branches to better control the quality of the code that is merged to your branches.
+The typical rules you add are to enforce reviewers on pull requests, and passed status checks so that automated testing and integrations are OK.
+
+1. Navigate to settings
+![](images/stepbystep/media/github_add_branch_rule.png)
+
+
+2. Add new rules
+
+Set the text pattern that matches the branches you want rules for. 
+
+Then enable the rules you want. Typically `Require pull request reviews before merging` and `Require status checks to pass before merging`
+
+![](images/stepbystep/media/github_new_branch_rule.png)
+
 
 
 ## After the hands-on lab
@@ -958,6 +973,6 @@ Duration: 10 Minutes
 
 ### Task 1: Delete resources
 
-1.  Now since the hands-on lab is complete, go ahead and delete the resource group you created for the Tailspin Toys deployments along with the Azure DevOps project that were created for this hands-on lab. You will no longer need those resources and it will be beneficial to clean up your Azure Subscription.
+1.  Now since the hands-on lab is complete, go ahead and delete the resource group you created for the Tailspin Toys deployments. You will no longer need those resources and it will be beneficial to clean up your Azure Subscription.
 
 These steps should be followed only *after* completing the hands-on lab.
