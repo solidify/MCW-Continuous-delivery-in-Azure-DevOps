@@ -900,6 +900,36 @@ You'll then merge the pull request into the master branch which triggers an auto
 
 In the tasks below, you will make changes directly through the Azure DevOps web interface. These steps could also be performed locally through an IDE of your choosing or using the command line.
 
+### Task 1: Add new file
+
+1. Select the branch you want to 
+![](images/stepbystep/media/github_select_branch.png)
+
+2. Choose add new file to the repo.
+
+![](images/stepbystep/media/github_add_file.png)
+
+3. Edit the file and choose new branch
+![](images/stepbystep/media/github_new_file_content.png)
+![](images/stepbystep/media/github_commit_new_file.png)
+
+
+4. Then create a pull request
+
+Navigate to the pullrequests
+
+compare & pullrequest 
+![](images/stepbystep/media/github_compare_and_pull_request.png)
+
+
+![](images/stepbystep/media/github_select_your_branch_for_pr.png)
+
+![](images/stepbystep/media/github_pr_selct_base_and_optional.png)
+
+5. Merge the pullrequest
+![](images/stepbystep/media/github_pr_merge.png)
+
+
 ### Task 1: Set up a Pull Request policy
 
 1.  Select the "Repos" menu item from the left-hand navigation. Then, choose "Branches".
