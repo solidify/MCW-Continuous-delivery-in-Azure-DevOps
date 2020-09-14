@@ -30,13 +30,11 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 1: Create container registry](#task-1-create-container-registry)
     - [Task 2: Create a service account to be able to log on azure cli in our pipeline](#task-2-create-a-service-account-to-be-able-to-log-on-azure-cli-in-our-pipeline)
     - [Task 3: Add a DBPASSWORD secret](#task-3-add-a-dbpassword-secret)
-  - [Exercise 4: Create Azure DevOps build pipeline](#exercise-3-create-azure-devops-build-pipeline)
-    - [Task 1: Create a build pipeline](#task-1-create-a-build-pipeline)
-  - [Exercise 5: Add release steps to the build pipeline](#exercise-5-add-release-steps-to-the-build-pipeline)
-    - [Task 1: Add a service connection to the azure subscription](#task-1-add-a-service-connection-to-the-azure-subscription)
-    - [Task 2: Add secrets to pipeline](#task-2-add-secrets-to-pipeline)
-    - [Task 3: Upgrade the build pipeline to a multistage pipeline and add deployment to dev](#task-3-upgrade-the-build-pipeline-to-a-multistage-pipeline-and-add-deployment-to-dev)
-    - [Task 4: Add test and production environments to the pipeline](#task-4-add-test-and-production-environments-to-the-pipeline)
+  - [Exercise 4: Create GitHub Action workflow](#exercise-4-create-github-action-workflow)
+    - [Task 1: Create a workflow](#task-1-create-a-workflow)
+  - [Exercise 5: Add release steps to the workflow](#exercise-5-add-release-steps-to-the-workflow)
+    - [Task 1: Add deployment to dev in the workflow](#task-1-add-deployment-to-dev-in-the-workflow)
+    - [Task 2: Add test and production environments to the workflow](#task-2-add-test-and-production-environments-to-the-workflow)
   - [Exercise 6: Set up a Pull Request policy, create a task branch and submit a pull request](#exercise-6-set-up-a-pull-request-policy-create-a-task-branch-and-submit-a-pull-request)
     - [Task 1: Set up a Pull Request policy](#task-1-set-up-a-pull-request-policy)
     - [Task 2: Create a new branch](#task-2-create-a-new-branch)
@@ -433,14 +431,14 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
           name: armtemplate
     ```
 
-4. The next part is login into Azure using the secret we created in Exercise 3.
+3. The next part is login into Azure using the secret we created in Exercise 3.
     ```yml
     - name: Login to Azure
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     ```
-5. After that we can run az commands in our workflow. We will now add a **run:** action that contains inline scripts. We are targeting powershell core with the setting **shell: pwsh**. We are using the arm template we pushed as artifacts in the build job to provision our dev website and the dev database. We are using powershell for getting the output variable, since our ARM template contains an output variable of new website name and we now need to parse that output of the webappname so we can use that to target our deployment in Azure
+4. After that we can run az commands in our workflow. We will now add a **run:** action that contains inline scripts. We are targeting powershell core with the setting **shell: pwsh**. We are using the arm template we pushed as artifacts in the build job to provision our dev website and the dev database. We are using powershell for getting the output variable, since our ARM template contains an output variable of new website name and we now need to parse that output of the webappname so we can use that to target our deployment in Azure
     ```yml
     - name: Deploy ARM template
       run: |
@@ -451,7 +449,7 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
       shell: pwsh
     ```
 
-6. Now we are using Azure CLI to actually deploy our containerimage into our Azure App Service. We are using Azure CLI to deploy our container into Azure AppService for Containers. We also deploy to a staging slot and then swap to production slot after the deployment is done and the website is ready to take traffic.
+5. Now we are using Azure CLI to actually deploy our containerimage into our Azure App Service. We are using Azure CLI to deploy our container into Azure AppService for Containers. We also deploy to a staging slot and then swap to production slot after the deployment is done and the website is ready to take traffic.
     ```yml
     - name: Deploy webapp to staging slot
       uses: azure/CLI@v1
