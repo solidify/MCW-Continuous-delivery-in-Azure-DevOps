@@ -36,11 +36,8 @@ Microsoft and the trademarks listed at https://www.microsoft.com/en-us/legal/int
     - [Task 1: Add deployment to dev in the workflow](#task-1-add-deployment-to-dev-in-the-workflow)
     - [Task 2: Add test and production environments to the workflow](#task-2-add-test-and-production-environments-to-the-workflow)
   - [Exercise 6: Set up a Pull Request policy, create a task branch and submit a pull request](#exercise-6-set-up-a-pull-request-policy-create-a-task-branch-and-submit-a-pull-request)
-    - [Task 1: Set up a Pull Request policy](#task-1-set-up-a-pull-request-policy)
-    - [Task 2: Create a new branch](#task-2-create-a-new-branch)
-    - [Task 3: Make a code change to the task branch](#task-3-make-a-code-change-to-the-task-branch)
-    - [Task 4: Submit a pull request](#task-4-submit-a-pull-request)
-    - [Task 5: Approve and complete a pull request](#task-5-approve-and-complete-a-pull-request)
+    - [Task 1: Commit new file with a Pull request](#task-1-Commit-new-file-with-a-Pull-request)
+    - [Task 2: Configure branch protection rules](#task-2-Configure-branch-protection-rules)
   - [After the hands-on lab](#after-the-hands-on-lab)
     - [Task 1: Delete resources](#task-1-delete-resources)
 
@@ -658,7 +655,7 @@ If everything is good, then you can merge it.
 ![](images/stepbystep/media/github_pr_merge.png)
 
 
-### Task 2: 
+### Task 2: Configure branch protection rules
 
 Here you can add rules to your branches to better control the quality of the code that is merged to your branches.
 The typical rules you add are to enforce reviewers on pull requests, and passed status checks so that automated testing and integrations are OK.
