@@ -672,6 +672,15 @@ Then enable the rules you want. Typically `Require pull request reviews before m
 
 ![](images/stepbystep/media/github_new_branch_rule.png)
 
+3. Status checks 
+It's common to use the status check rules. These are sanity checks such as checking if you have a license file, or if you don't have any work in progress items left when you want to merge. Pull request reviewers is also a common rule. In general you want someone to approve your code before you merge it.
+
+![](images/stepbystep/media/github_branch_rules_set.png)
+
+4. Results of the rules
+When the sules are evaluated in a pull request it looks something like the following
+
+![](images/stepbystep/media/github_pr_branch_checks_OK.png)
 
 
 ## After the hands-on lab
