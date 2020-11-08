@@ -421,6 +421,15 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     ```
+
+4. Then we need to create the Azure Resource Group so that the application arm template has somewhere to be deployed to
+    ```yml
+    - name: Deploy resource group 
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          az group create -l westeurope -n ${{ env.resourcegroup }}
+    ```
 4. After that we can run az commands in our workflow. We will now add a **run:** action that contains inline scripts. We are targeting powershell core with the setting **shell: pwsh**. We are using the arm template we pushed as artifacts in the build job to provision our dev website and the dev database. We are using powershell for getting the output variable, since our ARM template contains an output variable of new website name and we now need to parse that output of the webappname so we can use that to target our deployment in Azure
     ```yml
     - name: Deploy ARM template
@@ -471,6 +480,12 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
           with:
             creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+        - name: Deploy resource group
+          uses: azure/CLI@v1
+          with:
+            inlineScript: |
+              az group create -l westeurope -n ${{ env.resourcegroup }}
+
         - name: Deploy ARM template
           run: |
             $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=dev --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
@@ -508,7 +523,6 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
 2. The new release jobs in the workflow will now look like this
     
     ```yml
-    
     deploy-test:
       runs-on: ubuntu-latest
       needs: deploy-dev
@@ -522,6 +536,12 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
           uses: azure/login@v1
           with:
             creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+        - name: Deploy resource group
+          uses: azure/CLI@v1
+          with:
+            inlineScript: |
+              az group create -l westeurope -n ${{ env.resourcegroup }}
 
         - run: |
             $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=test --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
@@ -557,6 +577,12 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
           uses: azure/login@v1
           with:
             creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        - name: Deploy resource group
+          uses: azure/CLI@v1
+          with:
+            inlineScript: |
+              az group create -l westeurope -n ${{ env.resourcegroup }}
 
         - run: |
             $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=production --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
