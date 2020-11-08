@@ -111,7 +111,7 @@ Duration: 10 Minutes
 
 In this excersice we implement a container definition. We do this with a 'Dockerfile' and by defining all our steps inside it.
 
-Containers have multiple purposes. Among them are concistency, simplicity, and portability. Docker containers are the most videly spread container technology today. It is what we use here.
+Containers have multiple purposes, among them are concistency, simplicity, and portability. Docker containers are the most videly spread container technology today. It is what we use here.
 
 Containers are a way to make sure that your build and runtime is the same wherever you run it - Portability. 
 
@@ -126,16 +126,16 @@ When your container is defined, you know it will run with the same result wherev
 Right click in your editor -> choose 'New File'. 
 Or write `touch Dockerfile` in a terminal.
 
-2. Install node
+2. Multistage docker file
 
-Add RUN steps for installing nodejs in the container. We need this to build the frontend of the TailspinToys app.
-
-In your Dockerfile add:
+We will be using the concept of multistage docker files in this demo, so first we set our base image to the aspnet core runtime, and then create a new layer that points to the dotnet core sdk image.
 ```
-RUN apt-get update -yq 
-RUN apt-get install curl gnupg -yq 
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get install -y nodejs
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
+WORKDIR /app
+ENV ASPNETCORE_URLS http://+:5000
+EXPOSE 5000
+
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 ```
 
 3. Add source code and build the app
@@ -160,46 +160,35 @@ FROM build AS publish
 RUN dotnet publish "TailspinToysWeb.csproj" -c Release -o /app/publish
 ```
 
-We use dotnet publish to packet the sourcode in a proper way. 
+We use dotnet publish to package the source-code in a proper way. 
 
 4. Running the app in the container
 
 Now the container has the code and all dependencies it needs.
 
-We have to tell it to run our application:
+We have to tell it to run our application, and make sure we use the run-time base image:
 ```
 FROM base AS final
-ENV ASPNETCORE_URLS http://+:5000
-WORKDIR /app
-EXPOSE 5000
-# EXPOSE 5001
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "TailspinToysWeb.dll"]
 ```
 
 5. See if it works?
-We have to have a pipeline to test the container i azure devops. Commit and push your new dockerfile to your azure devops repo. Then continue to Excercise 3 below.
+We have to have a Workflow to test the container i Github Actions. Commit and push your new dockerfile to your Github repo. Then continue to Excercise 3 below.
 
 If you have docker installed on your local machine you can now build and run the container. While running the container you can visit localhost:5000 to see that the app is running.
 
 6. The final result of the Dockerfile
 
 ```
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS base
+#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
 WORKDIR /app
+ENV ASPNETCORE_URLS http://+:5000
+EXPOSE 5000
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
-
-# Prevent 'Warning: apt-key output should not be parsed (stdout is not a terminal)'
-ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
-
-# install NodeJS 13.x
-# see https://github.com/nodesource/distributions/blob/master/README.md#deb
-RUN apt-get update -yq 
-RUN apt-get install curl gnupg -yq 
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get install -y nodejs
-
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["src/TailspinToysWeb/TailspinToysWeb.csproj", "src/TailspinToysWeb/"]
 RUN dotnet restore "src/TailspinToysWeb/TailspinToysWeb.csproj"
@@ -211,10 +200,7 @@ FROM build AS publish
 RUN dotnet publish "TailspinToysWeb.csproj" -c Release -o /app/publish
 
 FROM base AS final
-ENV ASPNETCORE_URLS http://+:5000
 WORKDIR /app
-EXPOSE 5000
-# EXPOSE 5001
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "TailspinToysWeb.dll"]
 ```
