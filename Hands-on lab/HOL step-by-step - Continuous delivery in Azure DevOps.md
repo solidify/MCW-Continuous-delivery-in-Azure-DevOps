@@ -442,7 +442,7 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
         $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=dev --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
         $armOutputObj = $output | ConvertFrom-Json
         $webAppName = $armOutputObj.properties.outputs.webappname.value
-        echo "::set-env name=webAppName::$webAppName"
+        echo "webAppName=$webAppName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       shell: pwsh
     ```
 
@@ -490,7 +490,7 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
             $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=dev --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
             $armOutputObj = $output | ConvertFrom-Json
             $webAppName = $armOutputObj.properties.outputs.webappname.value
-            echo "::set-env name=webAppName::$webAppName"
+            echo "webAppName=$webAppName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           shell: pwsh
 
         - name: Deploy webapp to staging slot
@@ -549,7 +549,7 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
                           --docker-registry-server-url https://${{ env.containerregistry }} `
                           --docker-registry-server-user ${{ env.registryusername }} `
                           --slot staging
-            echo "::set-env name=webAppName::$webAppName"
+            echo "webAppName=$webAppName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           shell: pwsh
 
         - name: Swap slots for webapp
@@ -584,7 +584,7 @@ In this exercise, you will make changes to the workflow, so that we run a deploy
                           --docker-registry-server-url https://${{ env.containerregistry }} `
                           --docker-registry-server-user ${{ env.registryusername }} `
                           --slot staging
-            echo "::set-env name=webAppName::$webAppName"
+            echo "webAppName=$webAppName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           shell: pwsh
 
         - name: Swap slots for webapp
