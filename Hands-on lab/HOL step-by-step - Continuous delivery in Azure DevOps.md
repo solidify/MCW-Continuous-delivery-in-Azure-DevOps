@@ -128,14 +128,14 @@ Or write `touch Dockerfile` in a terminal.
 
 2. Multistage docker file
 
-We will be using the concept of multistage docker files in this demo, so first we set our base image to the aspnet core runtime, and then create a new layer that points to the dotnet core sdk image.
+We will be using the concept of multistage docker files in this demo, so first we set our base image to the aspnet 5.0 runtime, and then create a new layer that points to the .NET 5.0 SDK image.
 ```
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 WORKDIR /app
 ENV ASPNETCORE_URLS http://+:5000
 EXPOSE 5000
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 ```
 
 3. Add source code and build the app
@@ -174,21 +174,26 @@ ENTRYPOINT ["dotnet", "TailspinToysWeb.dll"]
 ```
 
 5. See if it works?
+
 We have to have a Workflow to test the container i Github Actions. Commit and push your new dockerfile to your Github repo. Then continue to Excercise 3 below.
 
 If you have docker installed on your local machine you can now build and run the container. While running the container you can visit localhost:5000 to see that the app is running.
+```
+docker build -t tailspintoysweb:dev .
+docker run -d -p 5000:5000 tailspintoysweb:dev
+```
 
 6. The final result of the Dockerfile
 
 ```
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 WORKDIR /app
 ENV ASPNETCORE_URLS http://+:5000
 EXPOSE 5000
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
 COPY ["src/TailspinToysWeb/TailspinToysWeb.csproj", "src/TailspinToysWeb/"]
 RUN dotnet restore "src/TailspinToysWeb/TailspinToysWeb.csproj"
