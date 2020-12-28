@@ -314,15 +314,22 @@ This hierarchy is reflected in the structure of a YAML file. The workflows needs
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - uses: azure/docker-login@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      
+      - name: Login to ACR
+        uses: docker/login-action@v1
         with:
-          login-server: ${{ env.containerregistry }}
+          registry: ${{ env.containerregistry }}
           username: ${{ env.registryusername }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - run: |
-          docker build . -t ${{ env.imagename }}:${{ github.sha }}
-          docker push ${{ env.imagename }}:${{ github.sha }}
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ${{ env.imagename }}:${{ github.sha }}
 
       - name: Upload arm templates to workflow
         uses: actions/upload-artifact@v2
@@ -363,15 +370,22 @@ This hierarchy is reflected in the structure of a YAML file. The workflows needs
           # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
           - uses: actions/checkout@v2
 
-          - uses: azure/docker-login@v1
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v1
+          
+          - name: Login to ACR
+            uses: docker/login-action@v1
             with:
-              login-server: ${{ env.containerregistry }}
+              registry: ${{ env.containerregistry }}
               username: ${{ env.registryusername }}
               password: ${{ secrets.REGISTRY_PASSWORD }}
 
-          - run: |
-              docker build . -t ${{ env.imagename }}:${{ github.sha }}
-              docker push ${{ env.imagename }}:${{ github.sha }}
+          - name: Build and push
+            id: docker_build
+            uses: docker/build-push-action@v2
+            with:
+              push: true
+              tags: ${{ env.imagename }}:${{ github.sha }}
 
           - name: Upload arm templates to workflow
             uses: actions/upload-artifact@v2
